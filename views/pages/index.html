@@ -82,7 +82,7 @@
                 <img src="<%= book.image_url %>" alt="<%= book.title %>">
                 <h4><%= book.title %></h4>
                 <p style="font-size:12px; color:#666;"><%= book.author %></p>
-                <h3 style="margin:10px 0;">$<%= book.price %></h3>
+                <h3 style="margin:10px 0;">RM <%= book.price.toFixed(2) %></h3>
                 <a href="/bookstore/book/<%= book.id %>" style="float:right; color:#666;"><i class="fa-solid fa-book-open"></i></a>
             </div>
         <% }) %>
