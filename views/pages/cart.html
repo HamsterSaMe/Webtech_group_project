@@ -1,0 +1,175 @@
+<%- include('../partials/header.html') %>
+<style>
+    .checkout-hero {
+        background: #D8CCC0;
+        padding: 24px 40px;
+        border-radius: 12px;
+        margin: 20px 0 30px;
+        display: flex;
+        align-items: center;
+        gap: 18px;
+    }
+    .checkout-hero .lock-icon {
+        background: #333;
+        color: white;
+        width: 48px; height: 48px;
+        border-radius: 10px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 22px; flex-shrink: 0;
+    }
+    .cart-layout { display: flex; gap: 30px; align-items: flex-start; }
+    .cart-items  { flex: 2; }
+    .cart-summary {
+        flex: 1;
+        background: white;
+        padding: 28px;
+        border-radius: 15px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.07);
+        position: sticky; top: 100px;
+    }
+    .cart-item {
+        background: white;
+        padding: 18px 20px;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 16px;
+        box-shadow: 0 4px 14px rgba(0,0,0,0.06);
+    }
+    .cart-item img { width: 70px; height: 88px; object-fit: contain; border-radius: 6px; flex-shrink:0; }
+    .cart-item-info { flex: 1; }
+    .cart-item-info .badge { background:#EFEBE1; padding:2px 10px; border-radius:12px; font-size:11px; }
+    .cart-item-info h4 { margin: 5px 0 2px; font-size:15px; }
+    .cart-item-info p  { color:#888; font-size:12px; margin:0; }
+    .cart-item-info .item-price { font-size:17px; font-weight:bold; margin-top:6px; }
+    .qty-ctrl { display:flex; align-items:center; gap:10px; }
+    .qty-btn {
+        border: none; border-radius:50%;
+        width: 30px; height: 30px;
+        background: #EEE; cursor: pointer;
+        font-size: 16px; font-weight: bold;
+        transition: background 0.2s;
+    }
+    .qty-btn:hover { background: #ddd; }
+    .qty-val { font-size:16px; font-weight:bold; min-width:20px; text-align:center; }
+    .trash-btn { color: #e53935; cursor:pointer; font-size:18px; margin-left:8px; background:none; border:none; }
+    .sum-row { display:flex; justify-content:space-between; margin:10px 0; }
+    .free-ship {
+        background: #FFF9C4; padding:12px;
+        border-radius:10px; margin-top:16px;
+        font-size:12px; line-height:1.6;
+    }
+    #emptyMsg {
+        text-align:center; padding:60px;
+        color:#aaa; display:none;
+    }
+    #emptyMsg i { font-size:50px; display:block; margin-bottom:16px; }
+</style>
+
+<div class="container">
+    <div class="checkout-hero">
+        <div class="lock-icon"><i class="fa-solid fa-lock"></i></div>
+        <div>
+            <h2 style="margin:0;">Secure Checkout</h2>
+            <p style="margin:4px 0 0; color:#555;">Ready to unlock new skills?</p>
+        </div>
+    </div>
+
+    <div class="cart-layout">
+        <!-- Left: Cart items -->
+        <div class="cart-items">
+            <div id="cartItemsContainer"></div>
+            <div id="emptyMsg">
+                <i class="fa-solid fa-cart-shopping"></i>
+                <p>Your cart is empty.</p>
+                <a href="/bookstore" class="btn btn-primary" style="margin-top:10px; display:inline-block;">Browse Books</a>
+            </div>
+        </div>
+
+        <!-- Right: Order Summary -->
+        <div class="cart-summary">
+            <h2 style="border-bottom:2px solid #333; padding-bottom:12px; text-align:center; margin-top:0;">Order Summary</h2>
+            <div class="sum-row"><span>Subtotal</span><strong id="sumSubtotal">RM 0.00</strong></div>
+            <div class="sum-row" style="color:#888; font-size:13px;"><span>Taxes</span><span>Calculated at checkout</span></div>
+            <hr style="border-color:#EEE; margin:14px 0;">
+            <div class="sum-row" style="font-size:22px; font-weight:bold;"><span>Total</span><span id="sumTotal">RM 0.00</span></div>
+            <div class="free-ship">
+                <i class="fa-regular fa-lightbulb" style="color:#F57F17;"></i>
+                <strong>Free Shipping</strong><br>
+                Orders over RM 150 qualify for free shipping!
+            </div>
+            <button class="btn btn-dark" id="checkoutBtn" style="width:100%; margin-top:20px; font-size:17px; padding:14px;" onclick="window.location.href='/bookstore/checkout'">
+                Proceed to Checkout
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    renderCart();
+});
+
+function getCart() { return JSON.parse(localStorage.getItem('eduCart') || '[]'); }
+function saveCart(c) { localStorage.setItem('eduCart', JSON.stringify(c)); refreshBadges(); }
+
+function renderCart() {
+    const cart = getCart();
+    const container = document.getElementById('cartItemsContainer');
+    const emptyMsg  = document.getElementById('emptyMsg');
+    const checkoutBtn = document.getElementById('checkoutBtn');
+
+    if (cart.length === 0) {
+        container.innerHTML = '';
+        emptyMsg.style.display = 'block';
+        checkoutBtn.disabled = true;
+        checkoutBtn.style.opacity = '0.5';
+        document.getElementById('sumSubtotal').textContent = 'RM 0.00';
+        document.getElementById('sumTotal').textContent    = 'RM 0.00';
+        return;
+    }
+
+    emptyMsg.style.display = 'none';
+    checkoutBtn.disabled = false;
+    checkoutBtn.style.opacity = '1';
+
+    container.innerHTML = cart.map((item, idx) => `
+        <div class="cart-item">
+            <img src="${item.img || '/images/extracted/page1_img9.png'}" alt="${item.name}" onerror="this.src='/images/extracted/page1_img9.png'">
+            <div class="cart-item-info">
+                <span class="badge">E-Book</span>
+                <h4>${item.name}</h4>
+                <p class="item-price">RM ${parseFloat(item.price).toFixed(2)}</p>
+            </div>
+            <div class="qty-ctrl">
+                <button class="qty-btn" onclick="changeQty(${idx}, -1)">−</button>
+                <span class="qty-val">${item.qty || 1}</span>
+                <button class="qty-btn" onclick="changeQty(${idx}, 1)">+</button>
+                <button class="trash-btn" onclick="removeItem(${idx})"><i class="fa-solid fa-trash"></i></button>
+            </div>
+        </div>
+    `).join('');
+
+    // Update totals
+    const sub = cart.reduce((s, i) => s + parseFloat(i.price) * (i.qty || 1), 0);
+    document.getElementById('sumSubtotal').textContent = 'RM ' + sub.toFixed(2);
+    document.getElementById('sumTotal').textContent    = 'RM ' + sub.toFixed(2);
+}
+
+function changeQty(idx, delta) {
+    let cart = getCart();
+    cart[idx].qty = Math.max(1, (cart[idx].qty || 1) + delta);
+    saveCart(cart);
+    renderCart();
+}
+
+function removeItem(idx) {
+    let cart = getCart();
+    cart.splice(idx, 1);
+    saveCart(cart);
+    renderCart();
+}
+</script>
+
+<%- include('../partials/footer.html') %>

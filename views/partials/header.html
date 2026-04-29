@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EduLearning</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <header>
+        <a href="/" class="logo">
+            <i class="fa-solid fa-book-open"></i> EDULEARNING
+        </a>
+        <ul class="nav-links">
+            <li><a href="/">Home</a></li>
+            <li><a href="/courses">Courses</a></li>
+            <li><a href="/bookstore">Bookstore</a></li>
+            <li><a href="/forum">Forum</a></li>
+        </ul>
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                const currentPath = window.location.pathname;
+                const links = document.querySelectorAll('.nav-links a');
+                links.forEach(link => {
+                    const href = link.getAttribute('href');
+                    if (href === '/' && currentPath === '/') {
+                        link.classList.add('active');
+                    } else if (href !== '/' && currentPath.startsWith(href)) {
+                        link.classList.add('active');
+                    }
+                });
+            });
+        </script>
+        <div class="header-icons">
+            <!-- Wishlist icon -->
+            <a href="#" id="wishlistNavBtn" title="My Wishlist" style="position:relative;">
+                <i class="fa-regular fa-heart"></i>
+                <span id="wishBadge" style="position:absolute;top:-6px;right:-8px;background:#e53935;color:white;border-radius:50%;font-size:10px;padding:1px 5px;display:none;font-weight:bold;">0</span>
+            </a>
+            <a href="/bookstore/cart" style="position:relative;">
+                <i class="fa-solid fa-cart-shopping"></i>
+                <span id="cartBadge" style="position:absolute;top:-6px;right:-8px;background:#FF9900;color:white;border-radius:50%;font-size:10px;padding:1px 5px;display:none;font-weight:bold;">0</span>
+            </a>
+            <% if (user) { %>
+                <% if (user.role === 'admin') { %>
+                    <a href="/admin" title="Admin Dashboard"><i class="fa-solid fa-shield-alt"></i></a>
+                <% } %>
+                <a href="/profile"><i class="fa-solid fa-user"></i></a>
+                <a href="/auth/logout"><i class="fa-solid fa-sign-out-alt"></i></a>
+            <% } else { %>
+                <a href="/auth/login"><i class="fa-solid fa-arrow-right-to-bracket"></i></a>
+            <% } %>
+        </div>
+    </header>
+
+    <!-- ── Wishlist Slide-in Drawer ────────────────────────────── -->
+    <div id="wishOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:8000;" onclick="closeWishlist()"></div>
+    <div id="wishDrawer" style="position:fixed;top:0;right:-420px;width:400px;height:100%;background:white;z-index:8001;box-shadow:-4px 0 30px rgba(0,0,0,0.15);transition:right 0.32s ease;display:flex;flex-direction:column;">
+        <div style="padding:24px 24px 16px;border-bottom:1px solid #eee;display:flex;justify-content:space-between;align-items:center;">
+            <h3 style="margin:0;"><i class="fa-regular fa-heart" style="color:#e53935;margin-right:8px;"></i> My Wishlist</h3>
+            <button onclick="closeWishlist()" style="background:none;border:none;font-size:22px;cursor:pointer;color:#888;">&times;</button>
+        </div>
+        <div id="wishItems" style="flex:1;overflow-y:auto;padding:16px;"></div>
+        <div style="padding:16px;border-top:1px solid #eee;background:#faf8f5;">
+            <p id="wishTotal" style="font-size:13px;color:#888;margin-bottom:10px;"></p>
+            <button onclick="moveAllToCart()" id="wishMoveAllBtn" style="width:100%;background:linear-gradient(90deg,#FFC16E,#FF9900);border:none;padding:13px;border-radius:10px;font-weight:bold;font-size:15px;cursor:pointer;">
+                <i class="fa-solid fa-cart-plus"></i> Move All to Cart
+            </button>
+        </div>
+    </div>
+
+    <main>
+
+<style>
+/* Wishlist drawer item */
+.wish-item {
+    display:flex;gap:12px;align-items:center;
+    background:#faf8f5;border-radius:10px;
+    padding:12px;margin-bottom:10px;
+}
+.wish-item img { width:52px;height:68px;object-fit:contain;border-radius:4px; }
+.wish-item-info { flex:1; }
+.wish-item-info h5 { font-size:13px;margin:0 0 3px; }
+.wish-item-info p  { font-size:12px;color:#888;margin:0; }
+.wish-item-info .wp { font-size:15px;font-weight:bold;color:var(--bg-dark);margin-top:4px; }
+.wish-action-btns { display:flex;flex-direction:column;gap:6px; }
+.wish-btn-cart {
+    background:var(--bg-dark);color:white;border:none;
+    padding:6px 10px;border-radius:7px;font-size:11px;cursor:pointer;
+    transition:background 0.2s;
+}
+.wish-btn-cart:hover { background:#FF9900; }
+.wish-btn-rm {
+    background:#fee;color:#c0392b;border:none;
+    padding:6px 10px;border-radius:7px;font-size:11px;cursor:pointer;
+}
+</style>
+
+<script>
+const CURRENT_USER_EMAIL = '<%- (typeof user !== "undefined" && user) ? user.email : "guest" %>';
+
+// ── Wishlist & Cart shared helpers (available on ALL pages) ──────
+function _wl() { return JSON.parse(localStorage.getItem('eduWishlist_' + CURRENT_USER_EMAIL) || '[]'); }
+function _saveWL(w) { localStorage.setItem('eduWishlist_' + CURRENT_USER_EMAIL, JSON.stringify(w)); }
+function _cart() { return JSON.parse(localStorage.getItem('eduCart_' + CURRENT_USER_EMAIL) || '[]'); }
+function _saveCart(c) { localStorage.setItem('eduCart_' + CURRENT_USER_EMAIL, JSON.stringify(c)); }
+
+function refreshBadges() {
+    // Wishlist badge
+    const wl = _wl();
+    const wb = document.getElementById('wishBadge');
+    if (wb) { wb.textContent = wl.length; wb.style.display = wl.length > 0 ? 'inline' : 'none'; }
+    // Cart badge
+    const cart = _cart();
+    const total = cart.reduce((s,i) => s + (i.qty||1), 0);
+    const cb = document.getElementById('cartBadge');
+    if (cb) { cb.textContent = total; cb.style.display = total > 0 ? 'inline' : 'none'; }
+}
+
+function openWishlist() {
+    document.getElementById('wishDrawer').style.right = '0';
+    document.getElementById('wishOverlay').style.display = 'block';
+    renderWishDrawer();
+}
+function closeWishlist() {
+    document.getElementById('wishDrawer').style.right = '-420px';
+    document.getElementById('wishOverlay').style.display = 'none';
+}
+
+function renderWishDrawer() {
+    const wl = _wl();
+    const box = document.getElementById('wishItems');
+    const tot = document.getElementById('wishTotal');
+    const moveBtn = document.getElementById('wishMoveAllBtn');
+    if (wl.length === 0) {
+        box.innerHTML = '<div style="text-align:center;padding:60px 20px;color:#aaa;"><i class="fa-regular fa-heart" style="font-size:48px;margin-bottom:16px;display:block;"></i><p>Your wishlist is empty.<br>Browse books and click ♡ to save them!</p></div>';
+        tot.textContent = '';
+        moveBtn.style.display = 'none';
+        return;
+    }
+    moveBtn.style.display = 'block';
+    const totalVal = wl.reduce((s,i) => s + parseFloat(i.price||0), 0);
+    tot.textContent = wl.length + ' item' + (wl.length>1?'s':'') + ' · Total value: RM ' + totalVal.toFixed(2);
+    box.innerHTML = wl.map(item => `
+        <div class="wish-item" id="wi-${item.id}">
+            <img src="${item.img || ''}" alt="${item.name}" onerror="this.style.display='none'">
+            <div class="wish-item-info">
+                <h5>${item.name}</h5>
+                <p>${item.author || ''}</p>
+                <p class="wp">RM ${parseFloat(item.price).toFixed(2)}</p>
+            </div>
+            <div class="wish-action-btns">
+                <button class="wish-btn-cart" onclick="moveOneToCart('${item.id}')"><i class="fa-solid fa-cart-plus"></i> Add to Cart</button>
+                <button class="wish-btn-rm" onclick="removeFromWishlist('${item.id}')"><i class="fa-solid fa-trash"></i> Remove</button>
+            </div>
+        </div>
+    `).join('');
+}
+
+function removeFromWishlist(id) {
+    let wl = _wl().filter(i => i.id !== id);
+    _saveWL(wl);
+    refreshBadges();
+    renderWishDrawer();
+    // Update heart icons on the current page
+    const heartBtns = document.querySelectorAll('[data-wishid="' + id + '"]');
+    heartBtns.forEach(b => {
+        b.classList.remove('wishlisted');
+        const ic = b.querySelector('i');
+        if (ic) { ic.className = 'fa-regular fa-heart'; ic.style.color = ''; }
+        b.style.background = '';
+    });
+}
+
+function moveOneToCart(id) {
+    const wl = _wl();
+    const item = wl.find(i => i.id === id);
+    if (!item) return;
+    // Add to cart
+    let cart = _cart();
+    const ex = cart.find(c => c.id === id);
+    if (ex) { ex.qty = (ex.qty||1)+1; } else { cart.push({id:item.id,name:item.name,price:item.price,qty:1,url:item.url||''}); }
+    _saveCart(cart);
+    // Remove from wishlist immediately
+    _saveWL(_wl().filter(i => i.id !== id));
+    refreshBadges();
+    // Update heart icon on page if present
+    document.querySelectorAll('[data-wishid="'+id+'"]').forEach(b => {
+        b.classList.remove('wishlisted');
+        b.style.background = '';
+        const ic = b.querySelector('i');
+        if (ic) { ic.className = 'fa-regular fa-heart'; ic.style.color = ''; }
+    });
+    // Re-render drawer
+    setTimeout(() => renderWishDrawer(), 300);
+}
+
+function moveAllToCart() {
+    const wl = _wl();
+    let cart = _cart();
+    wl.forEach(item => {
+        const ex = cart.find(c => c.id === item.id);
+        if (ex) { ex.qty = (ex.qty||1)+1; } else { cart.push({id:item.id,name:item.name,price:item.price,qty:1,url:item.url||''}); }
+    });
+    _saveCart(cart);
+    // Clear entire wishlist
+    _saveWL([]);
+    // Reset all heart icons on page
+    document.querySelectorAll('[data-wishid]').forEach(b => {
+        b.classList.remove('wishlisted');
+        b.style.background = '';
+        const ic = b.querySelector('i');
+        if (ic) { ic.className = 'fa-regular fa-heart'; ic.style.color = ''; }
+    });
+    refreshBadges();
+    const btn = document.getElementById('wishMoveAllBtn');
+    btn.innerHTML = '<i class="fa-solid fa-check"></i> All Added to Cart!';
+    btn.style.background = '#4CAF50';
+    setTimeout(() => { renderWishDrawer(); btn.style.background=''; }, 1200);
+}
+
+// Global toggle called from book cards
+function toggleWishlistGlobal(btn, id, name, price, img, author, bookUrl) {
+    let wl = _wl();
+    const idx = wl.findIndex(i => i.id === id);
+    const icon = btn.querySelector('i');
+    if (idx > -1) {
+        wl.splice(idx, 1);
+        if (icon) { icon.className = 'fa-regular fa-heart'; icon.style.color = ''; }
+        btn.classList.remove('wishlisted');
+        btn.style.background = '';
+    } else {
+        wl.push({ id, name, price, img: img||'', author: author||'', url: bookUrl||'' });
+        if (icon) { icon.className = 'fa-solid fa-heart'; icon.style.color = 'red'; }
+        btn.classList.add('wishlisted');
+        btn.style.background = '#ffe0e0';
+    }
+    _saveWL(wl);
+    refreshBadges();
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    refreshBadges();
+    document.getElementById('wishlistNavBtn').addEventListener('click', e => {
+        e.preventDefault();
+        openWishlist();
+    });
+
+    // Restore wishlisted state on book cards (if any exist on this page)
+    const wl = _wl();
+    wl.forEach(item => {
+        const btns = document.querySelectorAll('[data-wishid="' + item.id + '"]');
+        btns.forEach(btn => {
+            btn.classList.add('wishlisted');
+            btn.style.background = '#ffe0e0';
+            const ic = btn.querySelector('i');
+            if (ic) { ic.className = 'fa-solid fa-heart'; ic.style.color = 'red'; }
+        });
+    });
+});
+</script>

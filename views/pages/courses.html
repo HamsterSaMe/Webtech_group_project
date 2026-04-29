@@ -1,0 +1,284 @@
+<%- include('../partials/header.html') %>
+<style>
+    .courses-hero {
+        background: url('/images/extracted/page1_img6.jpeg') center/cover;
+        height: 300px;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        justify-content: center;
+        padding: 50px;
+        color: white;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+    }
+    .search-bar {
+        background: white;
+        padding: 10px 20px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        width: 400px;
+        margin-top: 20px;
+    }
+    .search-bar input {
+        border: none;
+        outline: none;
+        width: 100%;
+        margin-left: 10px;
+        font-size: 16px;
+    }
+    .featured-course {
+        display: flex;
+        background: var(--bg-light);
+        margin-top: 40px;
+        gap: 30px;
+    }
+    .featured-course img {
+        width: 500px;
+        border-radius: 12px;
+        object-fit: cover;
+    }
+    .filters {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 15px;
+        justify-content: center;
+        margin: 40px 0 20px;
+    }
+    .filter-btn {
+        background: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 20px;
+        cursor: pointer;
+        font-size: 14px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.08);
+        transition: background 0.2s, color 0.2s;
+    }
+    .filter-btn.active, .filter-btn:hover {
+        background: var(--bg-dark);
+        color: white;
+    }
+    .course-card-alt {
+        background: white;
+        border-radius: 15px;
+        padding: 15px;
+        cursor: pointer;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .course-card-alt:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+    }
+    .course-card-alt img {
+        width: 100%;
+        height: 180px;
+        object-fit: cover;
+        border-radius: 10px;
+    }
+    /* ── Pagination ───────────────────────────── */
+    .pagination {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        margin: 40px 0;
+    }
+    .page-btn {
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        border: none;
+        background: #D8CFC8;
+        color: #333;
+        font-size: 15px;
+        cursor: pointer;
+        transition: background 0.2s, transform 0.15s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .page-btn:hover { background: #b9afa6; transform: scale(1.08); }
+    .page-btn.active { background: var(--bg-dark); color: white; }
+    .page-arrow {
+        background: none;
+        border: none;
+        font-size: 20px;
+        cursor: pointer;
+        color: #555;
+        padding: 4px 8px;
+        transition: color 0.2s;
+    }
+    .page-arrow:disabled { color: #ccc; cursor: default; }
+    .page-arrow:hover:not(:disabled) { color: var(--bg-dark); }
+    #noResults {
+        text-align: center;
+        padding: 40px;
+        color: #888;
+        display: none;
+        font-size: 16px;
+        grid-column: 1 / -1;
+    }
+</style>
+
+<div class="courses-hero">
+    <h1 style="font-size: 48px;">Course Directory</h1>
+    <p style="font-size: 18px;">Master the craft of digital creation</p>
+    <div class="search-bar">
+        <i class="fa-solid fa-search" style="color: black;"></i>
+        <input type="text" id="searchInput" placeholder="Search for courses (e.g. UI/UX, Data)...">
+    </div>
+</div>
+
+<div class="container">
+    <h2>Featured / Trending</h2>
+    <% if (featuredCourse) { %>
+    <div class="featured-course">
+        <img src="<%= featuredCourse.image_url %>" alt="Featured Course">
+        <div>
+            <h2><%= featuredCourse.title %></h2>
+            <p><%= featuredCourse.instructor %></p>
+            <p style="color: #666; margin: 10px 0;"><i class="fa-solid fa-users"></i> <%= featuredCourse.students_count.toLocaleString() %> students &nbsp;&nbsp; <i class="fa-solid fa-hourglass-half"></i> <%= featuredCourse.duration %></p>
+            <p style="color: #FFAD42;">⭐⭐⭐⭐⭐ <span style="color:#666; font-size:12px;">(<%= featuredCourse.rating %>/5 based on reviews)</span></p>
+
+            <div style="background: white; padding: 20px; border-radius: 10px; margin-top: 20px;">
+                <h4>About this course</h4>
+                <p style="font-size: 14px; color: #555;"><%= featuredCourse.description %></p>
+            </div>
+
+            <div style="margin-top: 20px; display:flex; gap: 15px;">
+                <button class="btn btn-primary" style="background:#FFD54F; color:black;" onclick="window.location.href='/courses/<%= featuredCourse.id %>'">View Details</button>
+                <button class="btn btn-primary" onclick="window.location.href='/courses/<%= featuredCourse.id %>'">Enroll Now</button>
+            </div>
+        </div>
+    </div>
+    <% } %>
+
+    <!-- Category Filter Buttons -->
+    <div class="filters" id="filterBar">
+        <button class="filter-btn active" data-cat="all">All</button>
+        <button class="filter-btn" data-cat="art">Art</button>
+        <button class="filter-btn" data-cat="business">Business</button>
+        <button class="filter-btn" data-cat="ui/ux">UI/UX</button>
+        <button class="filter-btn" data-cat="science">Science</button>
+        <button class="filter-btn" data-cat="technology">Technology</button>
+        <button class="filter-btn" data-cat="design">Design</button>
+    </div>
+
+    <!-- Course Grid — all cards rendered, JS handles paging -->
+    <div class="grid-3" id="courseList">
+        <% courses.forEach(course => { %>
+            <div class="course-card-alt"
+                 data-title="<%= course.title.toLowerCase() %>"
+                 data-category="<%= course.category.toLowerCase() %>"
+                 onclick="window.location.href='/courses/<%= course.id %>'"
+            >
+                <img src="<%= course.image_url %>" alt="<%= course.title %>">
+                <h4 style="margin-top:10px;"><%= course.title %></h4>
+                <p style="font-size:12px; color:#888; margin: 4px 0;">
+                    <i class="fa-solid fa-user-tie"></i> <%= course.instructor %>
+                </p>
+                <p style="font-size:12px; color:#888; margin: 4px 0;">
+                    <i class="fa-solid fa-users"></i> <%= course.students_count ? course.students_count.toLocaleString() : 0 %> students &nbsp;
+                    <i class="fa-solid fa-hourglass-half"></i> <%= course.duration %>
+                </p>
+                <p style="color:#FFAD42; font-size:13px; margin: 6px 0;">⭐ <%= course.rating %>/5</p>
+                <a href="/courses/<%= course.id %>" style="float:right; color:#FF8F00; text-decoration:none; font-weight:bold; font-size:14px; margin-top:6px;" onclick="event.stopPropagation()">View Syllabus &rarr;</a>
+            </div>
+        <% }) %>
+        <div id="noResults">No courses match your search. Try a different keyword.</div>
+    </div>
+
+    <!-- Pagination -->
+    <div class="pagination" id="paginationBar">
+        <button class="page-arrow" id="prevBtn">&#8592;</button>
+        <div id="pageNumbers" style="display:flex; gap:10px;"></div>
+        <button class="page-arrow" id="nextBtn">&#8594;</button>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const PER_PAGE = 3;
+    const searchInput  = document.getElementById('searchInput');
+    const filterBtns   = document.querySelectorAll('.filter-btn');
+    const allCards     = Array.from(document.querySelectorAll('.course-card-alt'));
+    const noResults    = document.getElementById('noResults');
+    const pageNumbers  = document.getElementById('pageNumbers');
+    const prevBtn      = document.getElementById('prevBtn');
+    const nextBtn      = document.getElementById('nextBtn');
+
+    let currentPage    = 1;
+    let activeCategory = 'all';
+    let activeQuery    = '';
+
+    // ── Filter → returns visible subset ──────────────────────────
+    function getFiltered() {
+        return allCards.filter(card => {
+            const title = card.getAttribute('data-title');
+            const cat   = card.getAttribute('data-category');
+            const matchQ = title.includes(activeQuery);
+            const matchC = activeCategory === 'all' || cat === activeCategory;
+            return matchQ && matchC;
+        });
+    }
+
+    // ── Render page ──────────────────────────────────────────────
+    function render() {
+        const filtered   = getFiltered();
+        const totalPages = Math.max(1, Math.ceil(filtered.length / PER_PAGE));
+        if (currentPage > totalPages) currentPage = totalPages;
+
+        // Hide all, then show current page slice
+        allCards.forEach(c => c.style.display = 'none');
+        const slice = filtered.slice((currentPage - 1) * PER_PAGE, currentPage * PER_PAGE);
+        slice.forEach(c => c.style.display = 'block');
+
+        // No-results message
+        noResults.style.display = filtered.length === 0 ? 'block' : 'none';
+
+        // Build page number buttons
+        pageNumbers.innerHTML = '';
+        for (let i = 1; i <= totalPages; i++) {
+            const btn = document.createElement('button');
+            btn.className = 'page-btn' + (i === currentPage ? ' active' : '');
+            btn.textContent = i;
+            btn.addEventListener('click', () => { currentPage = i; render(); });
+            pageNumbers.appendChild(btn);
+        }
+
+        prevBtn.disabled = currentPage === 1;
+        nextBtn.disabled = currentPage === totalPages;
+    }
+
+    // ── Arrow buttons ────────────────────────────────────────────
+    prevBtn.addEventListener('click', () => { if (currentPage > 1) { currentPage--; render(); } });
+    nextBtn.addEventListener('click', () => {
+        const total = Math.ceil(getFiltered().length / PER_PAGE);
+        if (currentPage < total) { currentPage++; render(); }
+    });
+
+    // ── Search ───────────────────────────────────────────────────
+    searchInput.addEventListener('input', e => {
+        activeQuery = e.target.value.toLowerCase().trim();
+        currentPage = 1;
+        render();
+    });
+
+    // ── Category filter ──────────────────────────────────────────
+    filterBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            filterBtns.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            activeCategory = btn.getAttribute('data-cat');
+            currentPage = 1;
+            render();
+        });
+    });
+
+    // ── Initial render ───────────────────────────────────────────
+    render();
+});
+</script>
+
+<%- include('../partials/footer.html') %>

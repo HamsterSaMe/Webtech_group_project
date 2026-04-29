@@ -1,0 +1,690 @@
+<%- include('../partials/header.html') %>
+<style>
+    .profile-header {
+        background: #EFEBE1;
+        padding: 40px;
+        display: flex;
+        align-items: center;
+        gap: 30px;
+        border-radius: 0 0 20px 20px;
+    }
+    .profile-img {
+        width: 150px;
+        height: 150px;
+        border-radius: 20px;
+        border: 5px solid white;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        object-fit: cover;
+    }
+    .profile-nav {
+        background: #D8CCC0;
+        padding: 10px;
+        display: flex;
+        justify-content: space-around;
+        margin: 20px auto;
+        border-radius: 15px;
+        max-width: 1000px;
+    }
+    .profile-nav a {
+        text-decoration: none;
+        color: #333;
+        font-weight: 600;
+        font-size: 16px;
+        padding: 12px 24px;
+        border-radius: 10px;
+        transition: 0.2s;
+    }
+    .profile-nav a:hover {
+        background: rgba(255,255,255,0.3);
+    }
+    .profile-nav a.active {
+        background: #C64A25;
+        color: white;
+    }
+    .stats-row {
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+        margin-top: 20px;
+        flex-wrap: wrap;
+    }
+    .stat-box {
+        padding: 20px;
+        border-radius: 15px;
+        text-align: center;
+        width: 180px;
+        color: #333;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    }
+    .course-progress-card {
+        display: flex;
+        background: white;
+        border-radius: 15px;
+        padding: 20px;
+        gap: 20px;
+        margin-top: 20px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        align-items: flex-start;
+    }
+    .course-progress-card img {
+        width: 240px;
+        height: 160px;
+        border-radius: 10px;
+        object-fit: cover;
+    }
+    
+    .fav-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 20px;
+        margin-top: 20px;
+    }
+    .fav-card {
+        background: white;
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+        text-align: center;
+        padding-bottom: 15px;
+    }
+    .fav-card img {
+        width: 100%;
+        height: 180px;
+        object-fit: cover;
+    }
+    .vault-card {
+        display: flex;
+        background: white;
+        border-radius: 15px;
+        padding: 20px;
+        gap: 20px;
+        margin-top: 15px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        align-items: center;
+    }
+    .vault-card img {
+        width: 80px;
+        height: 110px;
+        border-radius: 8px;
+        object-fit: cover;
+    }
+    .history-card {
+        background: white;
+        border-radius: 15px;
+        padding: 25px;
+        margin-top: 20px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: #888;
+        background: white;
+        border-radius: 15px;
+        margin-top: 20px;
+    }
+    .empty-state i {
+        font-size: 48px;
+        margin-bottom: 15px;
+        color: #ccc;
+    }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    /* Edit Profile Modal */
+    .edit-modal-bg {
+        display: none;
+        position: fixed; inset: 0;
+        background: rgba(0,0,0,0.5);
+        z-index: 9100;
+        align-items: center; justify-content: center;
+    }
+    .edit-modal-box {
+        background: white; border-radius: 16px;
+        padding: 30px; width: 92%; max-width: 400px;
+        box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+    }
+    .edit-form-group { margin-bottom: 15px; }
+    .edit-form-group label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 5px; color: #555; }
+    .edit-form-group input { 
+        width: 100%; padding: 10px 14px; 
+        border: 2px solid #EEE; border-radius: 8px; 
+        font-size: 14px; outline: none; box-sizing: border-box; transition: 0.2s;
+    }
+    .edit-form-group input:focus { border-color: #9CCC65; }
+    .edit-btns { display: flex; gap: 10px; margin-top: 20px; }
+    .edit-btns button { flex: 1; padding: 12px; border: none; border-radius: 8px; font-size: 14px; font-weight: bold; cursor: pointer; }
+    
+    #alertToast {
+        position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-20px);
+        background: #333; color: white; padding: 12px 24px; border-radius: 8px;
+        font-size: 14px; opacity: 0; pointer-events: none; transition: 0.3s; z-index: 9999;
+    }
+    #alertToast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+</style>
+
+<div class="profile-header">
+    <img src="/images/extracted/page1_img4.jpeg" class="profile-img">
+    <div>
+        <h1 style="font-size: 42px; margin: 0 0 5px;"><%= user.full_name %> <i class="fa-solid fa-circle-check" style="color: #4CAF50; font-size: 24px;"></i></h1>
+        <p style="color: #666; font-size: 18px; margin: 0;"><i class="fa-solid fa-envelope"></i> <%= user.email %></p>
+        <p style="font-size: 16px; margin: 8px 0 0;">
+            <i class="fa-solid fa-user"></i> Age: <%= user.age %> &nbsp;|&nbsp; 
+            <i class="fa-solid fa-star" style="color: #FF9900;"></i> XP: <%= user.xp || 0 %> &nbsp;|&nbsp; 
+            <i class="fa-solid fa-id-badge" style="color: #42A5F5;"></i> Role: <span style="text-transform: capitalize; font-weight:bold;"><%= user.role || 'student' %></span>
+        </p>
+    </div>
+    <button onclick="openEditModal()" class="btn btn-primary" style="margin-left: auto; background: #9CCC65; color: #333; border: none; font-weight: bold;"><i class="fa-solid fa-pen"></i> Edit Profile</button>
+</div>
+
+<div id="alertToast">Profile updated successfully!</div>
+
+<div class="profile-nav">
+    <% if (user.role === 'lecturer') { %>
+        <a href="#" class="tab-link active" data-target="portfolio"><i class="fa-solid fa-list-check"></i> Teaching Portfolio</a>
+    <% } else { %>
+        <a href="#" class="tab-link active" data-target="quests"><i class="fa-regular fa-circle-check"></i> Active Quests</a>
+    <% } %>
+    <a href="#" class="tab-link" data-target="fav"><i class="fa-solid fa-heart"></i> Favourites</a>
+    <a href="#" class="tab-link" data-target="vault"><i class="fa-regular fa-folder-open"></i> Resource Vault</a>
+    <a href="#" class="tab-link" data-target="history"><i class="fa-solid fa-receipt"></i> Purchase History</a>
+</div>
+
+<div class="container" style="max-width: 1000px; padding-bottom: 80px;">
+    
+    <!-- STATS -->
+    <div class="stats-row">
+        <div class="stat-box" style="background:#FDF0E8; border: 1px solid #f0c8a8;">
+            <i class="fa-solid fa-book-open" style="font-size: 28px; color: #C64A25;"></i>
+            <h2 id="statTotal" style="font-size: 32px; margin: 10px 0; color: #C64A25;">0</h2>
+            <p style="margin:0; font-size:14px; font-weight:bold;">Total Courses</p>
+        </div>
+        <div class="stat-box" style="background:#E8F4F8; border: 1px solid #a8d0e6;">
+            <i class="fa-solid fa-play" style="font-size: 28px; color: #2E86C1;"></i>
+            <h2 id="statProgress" style="font-size: 32px; margin: 10px 0; color: #2E86C1;">0</h2>
+            <p style="margin:0; font-size:14px; font-weight:bold;">In Progress</p>
+        </div>
+        <div class="stat-box" style="background:#E8F8F5; border: 1px solid #a2d9ce;">
+            <i class="fa-solid fa-medal" style="font-size: 28px; color: #117A65;"></i>
+            <h2 id="statCompleted" style="font-size: 32px; margin: 10px 0; color: #117A65;">0</h2>
+            <p style="margin:0; font-size:14px; font-weight:bold;">Completed</p>
+        </div>
+        <div class="stat-box" style="background:#FCF3CF; border: 1px solid #f7dc6f;">
+            <i class="fa-solid fa-heart" style="font-size: 28px; color: #D4AC0D;"></i>
+            <h2 id="statFavs" style="font-size: 32px; margin: 10px 0; color: #D4AC0D;">0</h2>
+            <p style="margin:0; font-size:14px; font-weight:bold;">Saved Items</p>
+        </div>
+    </div>
+
+    <!-- TAB: ACTIVE QUESTS (OR PORTFOLIO) -->
+    <% if (user.role === 'lecturer') { %>
+    <div id="portfolio" class="tab-content active">
+        <div id="portfolioContainer"></div>
+    </div>
+    <% } else { %>
+    <div id="quests" class="tab-content active">
+        <h2 style="margin-top: 40px; margin-bottom: 20px;">Continue Learning</h2>
+        <div id="questsContainer"></div>
+    </div>
+    <% } %>
+
+    <!-- TAB: FAVOURITES -->
+    <div id="fav" class="tab-content">
+        <h2 style="margin-top: 40px; margin-bottom: 20px;">My Favourites</h2>
+        <div id="favContainer" class="fav-grid"></div>
+    </div>
+
+    <!-- TAB: RESOURCE VAULT -->
+    <div id="vault" class="tab-content">
+        <h2 style="margin-top: 40px; margin-bottom: 20px;">Digital Resource Vault</h2>
+        <p style="color: #666; margin-top:-10px; margin-bottom:20px;">Access your purchased e-books and digital materials instantly.</p>
+        <div id="vaultContainer"></div>
+    </div>
+
+    <!-- TAB: PURCHASE HISTORY -->
+    <div id="history" class="tab-content">
+        <h2 style="margin-top: 40px; margin-bottom: 20px;">Order History</h2>
+        <div id="historyContainer"></div>
+    </div>
+
+</div>
+
+<script>
+    const allCourses = <%- JSON.stringify(courses || []) %>;
+    const allBooks = <%- JSON.stringify(books || []) %>;
+
+    document.addEventListener('DOMContentLoaded', () => {
+        // Handle URL parameters for alerts
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.has('success')) {
+            showAlert('Profile updated successfully!', '#4CAF50');
+            window.history.replaceState({}, document.title, '/profile');
+        } else if (urlParams.get('error') === 'email_taken') {
+            showAlert('Error: This email is already registered to another user.', '#e53935');
+            window.history.replaceState({}, document.title, '/profile');
+        } else if (urlParams.get('error') === 'update_failed') {
+            showAlert('Error: Failed to update profile.', '#e53935');
+            window.history.replaceState({}, document.title, '/profile');
+        }
+
+        // Tab switching
+        document.querySelectorAll('.tab-link').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                document.querySelectorAll('.tab-link').forEach(l => l.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                
+                link.classList.add('active');
+                document.getElementById(link.dataset.target).classList.add('active');
+            });
+        });
+
+        // Auto-activate tab from URL query param (e.g., ?tab=resource-vault)
+        const tabParam = urlParams.get('tab');
+        if (tabParam) {
+            const targetLink = document.querySelector(`.tab-link[data-target="${tabParam}"]`);
+            if (targetLink) {
+                document.querySelectorAll('.tab-link').forEach(l => l.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                targetLink.classList.add('active');
+                document.getElementById(tabParam).classList.add('active');
+                window.history.replaceState({}, document.title, '/profile');
+            }
+        }
+
+        loadProfileData();
+    });
+
+    function loadProfileData() {
+        // 1. Load Active Quests (Courses) or Portfolio
+        let totalCourses = 0;
+        let inProgress = 0;
+        let completed = 0;
+        let questsHtml = '';
+
+        <% if (user.role === 'lecturer') { %>
+            let myCourses = allCourses.filter(c => c.instructor === '<%= user.full_name %>');
+            // FYP DEMO TRICK: If the user registered a new name that isn't attached to any courses yet, 
+            // give them the first two courses as a demonstration portfolio!
+            if (myCourses.length === 0 && allCourses.length >= 2) {
+                myCourses = [allCourses[0], allCourses[1]];
+            }
+
+            document.getElementById('portfolioContainer').innerHTML = myCourses.map(c => {
+                const enrolled = c.students_count || 0;
+                const progress = enrolled > 0 ? 65 : 0;
+                const score = enrolled > 0 ? '82/100' : 'N/A';
+                const progressColor = enrolled > 0 ? '#FF6B35' : '#CCC';
+                totalCourses++;
+                return `
+                <div class="course-progress-card" style="display:flex; gap:20px; background:white; padding:20px; border-radius:15px; margin-top:20px; box-shadow:0 4px 12px rgba(0,0,0,0.05); align-items:flex-start;">
+                    <img src="${c.image_url}" alt="${c.title}" style="width: 250px; height: 160px; object-fit: cover; border-radius: 12px; flex-shrink: 0;">
+                    <div style="flex:1; padding-top:5px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <span style="background:#EFEBE1; padding:2px 10px; border-radius:12px; font-size:11px;">${c.category}</span>
+                            <span style="color:#4CAF50; font-size:12px; font-weight:bold;"><i class="fa-solid fa-circle" style="font-size:8px;"></i> Published</span>
+                        </div>
+                        <h2 style="margin: 8px 0;">${c.title}</h2>
+                        <p style="margin:4px 0; font-size:13px; color:#555;"><i class="fa-solid fa-users"></i> Student Enrolled: ${enrolled > 0 ? enrolled : '0 (Not visible to student yet)'}</p>
+                        <div style="margin:12px 0;">
+                            <div style="display:flex; justify-content:space-between; font-size:13px; margin-bottom:4px;">
+                                <span><i class="fa-solid fa-chart-line"></i> Avg. Class Progress:</span>
+                                <span style="color:${progressColor}; font-weight:bold;">${progress}%</span>
+                            </div>
+                            <div style="background:#E0E0E0; height:8px; border-radius:4px; overflow:hidden;">
+                                <div style="background:${progressColor}; width:${progress}%; height:100%;"></div>
+                            </div>
+                        </div>
+                        <p style="margin:4px 0; font-size:13px; color:#555;"><i class="fa-solid fa-bullseye"></i> Avg. Quiz Score: ${score}</p>
+                        <div style="text-align:right; margin-top: 10px;">
+                            <button onclick="window.location.href='/courses/manage/${c.id}'" style="background:#FF9900; color:white; border:none; padding:8px 16px; border-radius:20px; font-weight:bold; cursor:pointer; font-size:13px;"><i class="fa-solid fa-gear"></i> Manage Content</button>
+                        </div>
+                    </div>
+                </div>
+                `;
+            }).join('');
+        <% } %>
+
+        const userEmailStr = '<%= user.email %>';
+
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            if (key.startsWith('edulearning_course_' + userEmailStr + '_')) {
+                const courseId = key.replace('edulearning_course_' + userEmailStr + '_', '');
+                const courseData = JSON.parse(localStorage.getItem(key));
+                
+                if (courseData.isEnrolled) {
+                    const courseInfo = allCourses.find(c => String(c.id) === String(courseId));
+                    if (courseInfo) {
+                        totalCourses++;
+                        const completedCount = (courseData.completedQuizzes || []).length;
+                        const totalLessons = 4; // Based on course detail logic
+                        const pct = Math.round((completedCount / totalLessons) * 100);
+                        
+                        if (pct >= 100) completed++;
+                        else inProgress++;
+
+                        questsHtml += `
+                            <div class="course-progress-card">
+                                <img src="${courseInfo.image_url}" alt="${courseInfo.title}">
+                                <div style="flex: 1; display:flex; flex-direction:column; justify-content:center;">
+                                    <div><span style="background:#EEE; padding: 4px 12px; border-radius: 12px; font-size: 11px; font-weight:bold;">${courseInfo.category}</span></div>
+                                    <h2 style="margin: 10px 0 5px;">${courseInfo.title}</h2>
+                                    <p style="color:#666; margin:0;">${courseInfo.instructor}</p>
+                                    
+                                    <p style="margin: 15px 0 5px; font-size:14px; font-weight:bold;">${completedCount} of ${totalLessons} lessons completed</p>
+                                    <div style="background: #EEE; height: 8px; border-radius: 4px; width:100%; overflow:hidden;">
+                                        <div style="background: ${pct===100?'#4CAF50':'#FF8F00'}; height: 100%; width: ${pct}%; border-radius: 4px;"></div>
+                                    </div>
+                                    <p style="text-align: right; color: ${pct===100?'#4CAF50':'#FF8F00'}; margin: 5px 0 0; font-weight:bold; font-size:14px;">${pct}%</p>
+                                    
+                                    <div style="margin-top: 15px;">
+                                        <a href="/courses/${courseInfo.id}" class="btn btn-primary" style="background: ${pct===100?'#4CAF50':'#333'}; border:none;">
+                                            <i class="fa-solid ${pct===100?'fa-rotate-right':'fa-play'}"></i> ${pct===100?'Review Course':'Continue Learning'}
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }
+                }
+            }
+        }
+
+        const questsEl = document.getElementById('questsContainer');
+        if (questsEl) {
+            if (questsHtml === '') {
+                questsEl.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fa-solid fa-graduation-cap"></i>
+                        <h3>No Active Quests</h3>
+                        <p>You haven't enrolled in any courses yet. Start your learning journey today!</p>
+                        <a href="/courses" class="btn btn-primary" style="margin-top:10px;">Browse Courses</a>
+                    </div>
+                `;
+            } else {
+                questsEl.innerHTML = questsHtml;
+            }
+        }
+
+        // 2. Load Favourites
+        const rawWish = localStorage.getItem('eduWishlist_' + userEmailStr);
+        const wishlist = rawWish ? JSON.parse(rawWish) : [];
+        document.getElementById('statFavs').textContent = wishlist.length;
+
+        if (wishlist.length === 0) {
+            document.getElementById('favContainer').style.display = 'block';
+            document.getElementById('favContainer').innerHTML = `
+                <div class="empty-state">
+                    <i class="fa-regular fa-heart"></i>
+                    <h3>Your Wishlist is Empty</h3>
+                    <p>Save items you like by clicking the heart icon on books or courses.</p>
+                </div>
+            `;
+        } else {
+            document.getElementById('favContainer').style.display = 'grid';
+            document.getElementById('favContainer').innerHTML = wishlist.map(w => `
+                <div class="fav-card" id="fav-${w.id}" style="position:relative;">
+                    <img src="${w.img}" alt="${w.name || w.title}">
+                    <button onclick="removeFav('${w.id}')" title="Remove from Favourites" style="position:absolute;top:10px;right:10px;background:rgba(255,255,255,0.92);border:none;width:30px;height:30px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(0,0,0,0.15);transition:background 0.2s;" onmouseover="this.style.background='#ffe0e0'" onmouseout="this.style.background='rgba(255,255,255,0.92)'">
+                        <i class="fa-solid fa-trash" style="color:#e53935;font-size:12px;"></i>
+                    </button>
+                    <div style="padding: 15px;">
+                        <span style="background:#FDF0E8; color:#C64A25; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight:bold;">${w.type === 'course' ? 'Course' : 'Book'}</span>
+                        <h4 style="margin: 10px 0 5px; font-size: 16px;">${w.name || w.title}</h4>
+                        <p style="color: #FF9900; font-weight: bold; margin:0 0 15px;">RM ${parseFloat(w.price).toFixed(2)}</p>
+                        <a href="/${w.type === 'course' ? 'courses' : 'bookstore/book'}/${w.id}" class="btn" style="background:#333; color:white; padding: 8px 15px; font-size: 13px; border-radius:6px; text-decoration:none;">View Details</a>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // 3. Load Purchase History & Resource Vault
+        const rawOrder = localStorage.getItem('orderHistory_' + userEmailStr);
+        const orderHistory = rawOrder ? JSON.parse(rawOrder) : [];
+
+        if (orderHistory.length === 0) {
+            const emptyHtml = `
+                <div class="empty-state">
+                    <i class="fa-solid fa-box-open"></i>
+                    <h3>No Purchase History</h3>
+                    <p>You haven't purchased anything yet.</p>
+                </div>
+            `;
+            document.getElementById('historyContainer').innerHTML = emptyHtml;
+            document.getElementById('vaultContainer').innerHTML = `
+                <div class="empty-state">
+                    <i class="fa-solid fa-lock"></i>
+                    <h3>Vault Empty</h3>
+                    <p>Purchase digital books to unlock your reading materials here.</p>
+                    <a href="/bookstore" class="btn btn-primary" style="margin-top:10px;">Visit Bookstore</a>
+                </div>
+            `;
+        } else {
+            // Render History Cards
+            document.getElementById('historyContainer').innerHTML = orderHistory.map(order => `
+                <div class="history-card">
+                    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #EEE; padding-bottom:15px; margin-bottom:15px;">
+                        <div>
+                            <strong style="font-size:18px;">Order #${order.orderNum}</strong>
+                            <p style="margin:3px 0 0; color:#666; font-size:13px;">${order.date} at ${order.time}</p>
+                        </div>
+                        <div style="text-align:right;">
+                            <strong style="font-size:20px; color:#C64A25;">RM ${order.total}</strong>
+                            <p style="margin:3px 0 0; background:#4CAF50; color:white; padding:2px 8px; border-radius:12px; font-size:11px; font-weight:bold; display:inline-block;">Completed</p>
+                        </div>
+                    </div>
+                    
+                    <div style="display:flex; flex-direction:column; gap:10px;">
+                        ${order.items.map(item => `
+                            <div style="display:flex; align-items:center; gap:15px; background:#F9F9F9; padding:10px; border-radius:8px;">
+                                <img src="${item.img || '/images/extracted/page1_img9.png'}" style="width:50px; height:70px; object-fit:cover; border-radius:4px;">
+                                <div style="flex:1;">
+                                    <h4 style="margin:0 0 4px; font-size:15px;">${item.name}</h4>
+                                    <p style="margin:0; font-size:13px; color:#888;">Qty: ${item.qty || 1} &nbsp;|&nbsp; Unit Price: RM ${parseFloat(item.price).toFixed(2)}</p>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                    
+                    <div style="margin-top:20px; text-align:right;">
+                        <button onclick="checkStatus()" class="btn" style="background:#FF9900; color:white; text-decoration:none; padding:10px 20px; border-radius:8px; border:none; font-weight:bold; cursor:pointer; margin-right:10px;">
+                            <i class="fa-solid fa-truck-fast"></i> Check Status
+                        </button>
+                        <a href="/bookstore/order-confirmation" class="btn" style="background:#333; color:white; text-decoration:none; padding:10px 20px; border-radius:8px;"><i class="fa-solid fa-receipt"></i> View Full Receipt</a>
+                    </div>
+                </div>
+            `).reverse().join('');
+
+            // Render Vault (All books are digital)
+            let vaultItems = [];
+            orderHistory.forEach(o => {
+                if(o.items) {
+                    o.items.forEach(item => {
+                        // avoid duplicate books in vault
+                        if(!vaultItems.find(i => i.id === item.id)) {
+                            item.date = o.date;
+                            vaultItems.push(item);
+                        }
+                    });
+                }
+            });
+
+            if (vaultItems.length === 0) {
+                document.getElementById('vaultContainer').innerHTML = `
+                    <div class="empty-state">
+                        <i class="fa-solid fa-book-journal-whills"></i>
+                        <h3>No Digital Books</h3>
+                        <p>Your recent order did not contain any digital reading materials.</p>
+                    </div>
+                `;
+            } else {
+                document.getElementById('vaultContainer').innerHTML = vaultItems.map(item => {
+                    const readUrl = item.url || ('https://openlibrary.org/search?q=' + encodeURIComponent(item.name));
+                    return `
+                    <div class="vault-card">
+                        <img src="${item.img || '/images/extracted/page1_img9.png'}" alt="${item.name}">
+                        <div style="flex:1;">
+                            <span style="background:#E8F8F5; color:#117A65; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight:bold;"><i class="fa-solid fa-unlock"></i> Owned</span>
+                            <h3 style="margin: 8px 0 5px;">${item.name}</h3>
+                            <p style="color:#666; margin:0; font-size:13px;">Purchased on ${item.date}</p>
+                        </div>
+                        <div>
+                            <a href="${readUrl}" target="_blank" class="btn btn-primary" style="background:#FF9900; border:none; border-radius:8px; padding:12px 24px; text-decoration:none; display:inline-flex; align-items:center; gap:8px;">
+                                <i class="fa-solid fa-book-open"></i> Read Online
+                            </a>
+                        </div>
+                    </div>
+                `}).join('');
+            }
+        }
+
+        // Update top stats
+        document.getElementById('statTotal').textContent = totalCourses;
+        document.getElementById('statProgress').textContent = inProgress;
+        document.getElementById('statCompleted').textContent = completed;
+        
+        // Populate the Status Modal
+        if (rawOrder) {
+            const order = JSON.parse(rawOrder);
+            document.getElementById('statusOrderNum').textContent = 'Order #' + order.orderNum;
+            document.getElementById('readLinksContainer').innerHTML = `
+                <a href="/profile?tab=vault" style="display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:700;color:white;background:linear-gradient(90deg,#FFC16E,#FF9900);padding:10px 18px;border-radius:10px;text-decoration:none;justify-content:center;">
+                    <i class="fa-solid fa-book-open-reader"></i> Go to Resource Vault
+                </a>
+            `;
+        }
+    }
+
+    function checkStatus() {
+        document.getElementById('statusModal').style.display = 'flex';
+    }
+
+    function removeFav(itemId) {
+        const key = 'eduWishlist_' + '<%= user.email %>';
+        let wishlist = JSON.parse(localStorage.getItem(key) || '[]');
+        wishlist = wishlist.filter(w => String(w.id) !== String(itemId));
+        localStorage.setItem(key, JSON.stringify(wishlist));
+
+        // Remove card from DOM with a nice fade
+        const card = document.getElementById('fav-' + itemId);
+        if (card) {
+            card.style.transition = 'opacity 0.3s, transform 0.3s';
+            card.style.opacity = '0';
+            card.style.transform = 'scale(0.9)';
+            setTimeout(() => {
+                card.remove();
+                // Update badge count
+                const remaining = document.querySelectorAll('#favContainer .fav-card').length;
+                document.getElementById('statFavs').textContent = remaining;
+                if (remaining === 0) {
+                    document.getElementById('favContainer').style.display = 'block';
+                    document.getElementById('favContainer').innerHTML = `
+                        <div class="empty-state">
+                            <i class="fa-regular fa-heart"></i>
+                            <h3>Your Wishlist is Empty</h3>
+                            <p>Save items you like by clicking the heart icon on books or courses.</p>
+                        </div>
+                    `;
+                }
+            }, 300);
+        }
+    }
+</script>
+
+<!-- Status Modal (Copied from Order Confirmation) -->
+<div id="statusModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9000;align-items:center;justify-content:center;">
+    <div style="background:white;border-radius:18px;padding:32px 28px;max-width:380px;width:92%;text-align:center;">
+        <i class="fa-solid fa-truck-fast" style="font-size:40px;color:#FF9900;margin-bottom:12px;display:block;"></i>
+        <h3 style="margin:0 0 4px;">Order Status</h3>
+        <p id="statusOrderNum" style="color:#888;font-size:13px;margin:0 0 18px;"></p>
+
+        <div style="text-align:left;">
+            <!-- Step 1: Confirmed -->
+            <div style="display:flex;align-items:flex-start;gap:14px;padding:10px 0;border-bottom:1px solid #EEE;">
+                <i class="fa-solid fa-circle-check" style="color:#4CAF50;font-size:18px;margin-top:2px;"></i>
+                <div>
+                    <strong style="font-size:13px;">Order Confirmed</strong>
+                    <p style="margin:3px 0 0;font-size:12px;color:#666;">Your order has been received and confirmed.</p>
+                </div>
+            </div>
+            <!-- Step 2: Payment -->
+            <div style="display:flex;align-items:flex-start;gap:14px;padding:10px 0;border-bottom:1px solid #EEE;">
+                <i class="fa-solid fa-circle-check" style="color:#4CAF50;font-size:18px;margin-top:2px;"></i>
+                <div>
+                    <strong style="font-size:13px;">Payment Processed</strong>
+                    <p style="margin:3px 0 0;font-size:12px;color:#666;">Payment has been verified successfully.</p>
+                </div>
+            </div>
+            <!-- Step 3: Preparing -->
+            <div style="display:flex;align-items:flex-start;gap:14px;padding:10px 0;border-bottom:1px solid #EEE;">
+                <i class="fa-solid fa-circle-check" style="color:#4CAF50;font-size:18px;margin-top:2px;"></i>
+                <div>
+                    <strong style="font-size:13px;">Order Prepared &amp; Packed</strong>
+                    <p style="margin:3px 0 0;font-size:12px;color:#666;">Your books have been packed and handed to courier.</p>
+                </div>
+            </div>
+            <!-- Step 4: Ready to Read (ACTIVE) -->
+            <div style="display:flex;align-items:flex-start;gap:14px;padding:10px 0;">
+                <i class="fa-solid fa-circle-check" style="color:#4CAF50;font-size:18px;margin-top:2px;"></i>
+                <div style="width: 100%;">
+                    <strong style="font-size:13px;">Ready to Read</strong>
+                    <p style="margin:3px 0 0;font-size:12px;color:#666;">Your digital books are ready. Click below to start reading!</p>
+                    <div id="readLinksContainer" style="margin-top: 10px; display: flex; flex-direction: column; gap: 8px;">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <button onclick="document.getElementById('statusModal').style.display='none'" style="margin-top:22px;width:100%;background:#2C2C2C;color:white;border:none;padding:13px;border-radius:10px;font-size:15px;cursor:pointer;font-weight:bold;">Close</button>
+    </div>
+</div>
+
+<!-- Edit Profile Modal -->
+<div class="edit-modal-bg" id="editModal">
+    <div class="edit-modal-box">
+        <h2 style="margin:0 0 20px;"><i class="fa-solid fa-user-pen" style="color:#9CCC65;"></i> Edit Profile</h2>
+        <form action="/profile/edit" method="POST">
+            <div class="edit-form-group">
+                <label>Full Name</label>
+                <input type="text" name="full_name" value="<%= user.full_name %>" required>
+            </div>
+            <div class="edit-form-group">
+                <label>Email Address</label>
+                <input type="email" name="email" value="<%= user.email %>" required>
+            </div>
+            <div class="edit-form-group">
+                <label>Phone Number</label>
+                <input type="tel" name="phone" value="<%= user.phone %>">
+            </div>
+            <div class="edit-form-group">
+                <label>Age</label>
+                <input type="number" name="age" value="<%= user.age %>" min="1" max="120">
+            </div>
+            <div class="edit-btns">
+                <button type="button" onclick="closeEditModal()" style="background:#EEE; color:#555;">Cancel</button>
+                <button type="submit" style="background:#9CCC65; color:#333;">Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function openEditModal() { document.getElementById('editModal').style.display = 'flex'; }
+    function closeEditModal() { document.getElementById('editModal').style.display = 'none'; }
+    
+    // Close modal on click outside
+    document.getElementById('editModal').addEventListener('click', (e) => {
+        if (e.target === document.getElementById('editModal')) closeEditModal();
+    });
+
+    function showAlert(msg, color) {
+        const toast = document.getElementById('alertToast');
+        toast.textContent = msg;
+        toast.style.background = color || '#333';
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+</script>
+
+<%- include('../partials/footer.html') %>

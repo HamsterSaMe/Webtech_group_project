@@ -1,0 +1,157 @@
+<%- include('../partials/header.html') %>
+<style>
+    .book-detail-wrap {
+        display: flex;
+        gap: 40px;
+        background: white;
+        border-radius: 18px;
+        padding: 40px;
+        margin: 40px 0;
+        box-shadow: 0 6px 30px rgba(0,0,0,0.08);
+    }
+    .book-cover img {
+        width: 240px;
+        border-radius: 10px;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+        object-fit: contain;
+    }
+    .book-info { flex: 1; }
+    .book-info h1 { font-size: 28px; margin-bottom: 8px; }
+    .book-info .author { color: #666; font-size: 16px; margin-bottom: 16px; }
+    .book-info .stars { color: #FFAD42; font-size: 18px; }
+    .price-tag {
+        font-size: 36px;
+        font-weight: bold;
+        color: var(--bg-dark);
+        margin: 20px 0;
+    }
+    .desc-box {
+        background: #F8F5F0;
+        border-radius: 12px;
+        padding: 20px;
+        margin: 20px 0;
+        color: #555;
+        line-height: 1.7;
+    }
+    .action-row {
+        display: flex;
+        gap: 14px;
+        flex-wrap: wrap;
+        margin-top: 20px;
+    }
+    .btn-buy {
+        background: linear-gradient(90deg, #FFC16E, #FF9900);
+        color: var(--text-dark);
+        border: none;
+        padding: 14px 28px;
+        border-radius: 10px;
+        font-size: 16px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: transform 0.2s;
+    }
+    .btn-buy:hover { transform: scale(1.03); }
+    .btn-preview {
+        background: var(--bg-dark);
+        color: white;
+        border: none;
+        padding: 14px 28px;
+        border-radius: 10px;
+        font-size: 16px;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: background 0.2s;
+    }
+    .btn-preview:hover { background: #555; color: white; }
+    .badge-cat {
+        display: inline-block;
+        background: #EDE8E0;
+        color: #555;
+        border-radius: 20px;
+        padding: 5px 14px;
+        font-size: 12px;
+        margin-right: 8px;
+    }
+    #toastMsg {
+        position: fixed; bottom: 30px; right: 30px;
+        background: #333; color: white;
+        padding: 14px 22px; border-radius: 10px;
+        opacity: 0; transform: translateY(20px);
+        transition: opacity 0.3s, transform 0.3s;
+        z-index: 9999; pointer-events: none;
+    }
+    #toastMsg.show { opacity: 1; transform: translateY(0); }
+</style>
+
+<div class="container">
+    <p style="margin: 20px 0; font-size: 14px; color: #888;">
+        <a href="/bookstore" style="color: var(--bg-dark); text-decoration: none;">← Back to Bookstore</a>
+    </p>
+
+    <div class="book-detail-wrap">
+        <div class="book-cover">
+            <img src="<%= book.image_url %>" alt="<%= book.title %>">
+        </div>
+        <div class="book-info">
+            <span class="badge-cat"><%= book.category %></span>
+            <h1><%= book.title %></h1>
+            <p class="author">by <strong><%= book.author %></strong></p>
+            <p class="stars">
+                ⭐⭐⭐⭐⭐ <span style="color:#555; font-size:14px;"><%= book.rating %>/5 · <%= book.reviews_count %> reviews</span>
+            </p>
+
+            <div class="desc-box">
+                <h4 style="margin-bottom:10px;">About this Book</h4>
+                <p><%= book.description %></p>
+            </div>
+
+            <div class="price-tag">RM <%= book.price.toFixed(2) %></div>
+
+            <div class="action-row">
+                <button class="btn-buy" id="addCartBtn" onclick="addToCart()">
+                    <i class="fa-solid fa-cart-plus"></i> Add to Cart
+                </button>
+                <button class="btn-buy" style="background: #f0ebe5; color: #333;" onclick="toggleWish(this)">
+                    <i class="fa-regular fa-heart" id="wishIcon"></i> Wishlist
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="toastMsg">🛒 Added to cart!</div>
+
+<script>
+const BOOK_ID    = '<%= book.id %>';
+const BOOK_NAME  = '<%= book.title.replace(/'/g,"") %>';
+const BOOK_PRICE = <%= book.price %>;
+const BOOK_URL   = '<%= book.book_url %>';
+
+function addToCart() {
+    const btn  = document.getElementById('addCartBtn');
+    let cart   = JSON.parse(localStorage.getItem('eduCart') || '[]');
+    const idx  = cart.findIndex(i => i.id === BOOK_ID);
+    if (idx > -1) { cart[idx].qty = (cart[idx].qty || 1) + 1; }
+    else { cart.push({ id: BOOK_ID, name: BOOK_NAME, price: BOOK_PRICE, qty: 1, url: BOOK_URL }); }
+    localStorage.setItem('eduCart', JSON.stringify(cart));
+    btn.innerHTML = '<i class="fa-solid fa-check"></i> Added!';
+    btn.style.background = '#4CAF50';
+    const t = document.getElementById('toastMsg');
+    t.textContent = '🛒 "' + BOOK_NAME + '" added to cart!';
+    t.classList.add('show');
+    setTimeout(() => { t.classList.remove('show'); btn.innerHTML = '<i class="fa-solid fa-cart-plus"></i> Add to Cart'; btn.style.background = ''; }, 2500);
+}
+
+function toggleWish(btn) {
+    const icon = document.getElementById('wishIcon');
+    const wishlisted = icon.classList.contains('fa-solid');
+    icon.className = wishlisted ? 'fa-regular fa-heart' : 'fa-solid fa-heart';
+    icon.style.color = wishlisted ? '' : 'red';
+    btn.style.background = wishlisted ? '#f0ebe5' : '#ffe0e0';
+}
+</script>
+
+<%- include('../partials/footer.html') %>

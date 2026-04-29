@@ -1,0 +1,31 @@
+    </main>
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h4>Contact Us</h4>
+                <p><i class="fa-solid fa-phone"></i> +1 (555) 123-4567</p>
+                <p><i class="fa-solid fa-envelope"></i> <%= (typeof siteSettings !== 'undefined' && siteSettings.contact_email) ? siteSettings.contact_email : 'info@edulearning.com' %></p>
+            </div>
+            <div class="footer-section">
+                <h4>Quick Links</h4>
+                <a href="/">Home</a>
+                <a href="/courses">Courses</a>
+                <a href="/bookstore">Bookstore</a>
+                <a href="/forum">Forum</a>
+            </div>
+            <div class="footer-section" style="max-width: 300px; text-align: right;">
+                <h4>About Us</h4>
+                <p><%= (typeof siteSettings !== 'undefined' && siteSettings.footer_desc) ? siteSettings.footer_desc : 'A digital platform dedicated to academic growth, peer-to-peer learning, and sustainable resource sharing' %></p>
+                <div style="margin-top: 15px; font-size: 20px;">
+                    <a href="#" style="display:inline; margin-right:10px;"><i class="fa-brands fa-instagram"></i></a>
+                    <a href="#" style="display:inline; margin-right:10px;"><i class="fa-brands fa-facebook"></i></a>
+                    <a href="#" style="display:inline;"><i class="fa-brands fa-whatsapp"></i></a>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>2026 EduLearning. All rights reserved. | Privacy Policy | Terms of Service</p>
+        </div>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,352 @@
+<%- include('../partials/header.html') %>
+<style>
+    .checkout-hero {
+        background: #D8CCC0;
+        padding: 24px 40px;
+        border-radius: 12px;
+        margin: 20px 0 30px;
+        display: flex;
+        align-items: center;
+        gap: 18px;
+    }
+    .checkout-hero .lock-icon {
+        background: #333; color: white;
+        width: 48px; height: 48px; border-radius: 10px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 22px; flex-shrink: 0;
+    }
+    .checkout-layout { display: flex; gap: 30px; align-items: flex-start; }
+    .checkout-left { flex: 2; }
+    .checkout-right {
+        flex: 1;
+        background: white;
+        padding: 28px;
+        border-radius: 15px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.07);
+        position: sticky; top: 100px;
+    }
+    /* Cart items in checkout */
+    .co-item {
+        background: white;
+        padding: 16px 18px;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        margin-bottom: 14px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+    }
+    .co-item img { width: 62px; height: 78px; object-fit: contain; border-radius: 6px; flex-shrink:0; }
+    .co-item-info { flex:1; }
+    .co-item-info .badge { background:#EFEBE1; padding:2px 10px; border-radius:12px; font-size:11px; }
+    .co-item-info h4 { margin:5px 0 2px; font-size:14px; }
+    .co-item-info p { color:#888; font-size:12px; margin:0; }
+    .co-item-info .price { font-weight:bold; font-size:15px; margin-top:5px; }
+    .qty-ctrl { display:flex; align-items:center; gap:8px; }
+    .qty-btn { border:none; border-radius:50%; width:28px; height:28px; background:#EEE; cursor:pointer; font-size:15px; font-weight:bold; }
+    .qty-val { font-size:15px; font-weight:bold; min-width:18px; text-align:center; }
+    .trash-btn { color:#e53935; cursor:pointer; font-size:16px; margin-left:6px; background:none; border:none; }
+    /* Section boxes */
+    .form-section {
+        background: white;
+        border-radius: 15px;
+        padding: 28px;
+        margin-top: 20px;
+        box-shadow: 0 4px 14px rgba(0,0,0,0.06);
+    }
+    .form-section h3 { margin: 0 0 20px; font-size: 20px; }
+    .form-group { margin-bottom: 16px; }
+    .form-group label { display:block; font-size:13px; font-weight:600; margin-bottom:6px; color:#444; }
+    .form-group input, .form-group select {
+        width: 100%;
+        padding: 10px 14px;
+        border: 1.5px solid #ddd;
+        border-radius: 8px;
+        font-size: 14px;
+        box-sizing: border-box;
+        transition: border-color 0.2s;
+        background: white;
+    }
+    .form-group input:focus, .form-group select:focus {
+        outline: none;
+        border-color: #FFAD42;
+    }
+    .form-row { display:flex; gap:14px; }
+    .form-row .form-group { flex:1; }
+    .input-icon { position:relative; }
+    .input-icon i { position:absolute; left:12px; top:50%; transform:translateY(-50%); color:#aaa; font-size:14px; }
+    .input-icon input { padding-left: 36px; }
+    /* Order summary */
+    .sum-row { display:flex; justify-content:space-between; margin:10px 0; }
+    .free-ship { background:#FFF9C4; padding:12px; border-radius:10px; margin-top:16px; font-size:12px; line-height:1.6; }
+    /* Place Order button */
+    .place-order-btn {
+        width: 100%;
+        background: #2C2C2C;
+        color: white;
+        border: none;
+        padding: 15px;
+        border-radius: 10px;
+        font-size: 17px;
+        font-weight: bold;
+        cursor: pointer;
+        margin-top: 20px;
+        transition: background 0.2s;
+    }
+    .place-order-btn:hover { background: #444; }
+    /* Validation */
+    .form-group input.error { border-color: #e53935; }
+    .form-group .err-msg { color:#e53935; font-size:11px; margin-top:4px; display:none; }
+</style>
+
+<div class="container">
+    <div class="checkout-hero">
+        <div class="lock-icon"><i class="fa-solid fa-lock"></i></div>
+        <div>
+            <h2 style="margin:0;">Secure Checkout</h2>
+            <p style="margin:4px 0 0; color:#555;">Ready to unlock new skills?</p>
+        </div>
+    </div>
+
+    <div class="checkout-layout">
+        <!-- LEFT: Cart + Forms -->
+        <div class="checkout-left">
+            <!-- Cart Items -->
+            <div id="coItemsContainer"></div>
+
+            <!-- Billing Information -->
+            <div class="form-section">
+                <h3>Billing Information</h3>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>First Name</label>
+                        <input type="text" id="firstName" placeholder="Alex">
+                        <div class="err-msg" id="errFirstName">Required</div>
+                    </div>
+                    <div class="form-group">
+                        <label>Last Name</label>
+                        <input type="text" id="lastName" placeholder="Mercer">
+                        <div class="err-msg" id="errLastName">Required</div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <div class="input-icon">
+                        <i class="fa-solid fa-envelope"></i>
+                        <input type="email" id="email" placeholder="xxx@student.edu.my" value="<%= user ? user.email : '' %>">
+                    </div>
+                    <div class="err-msg" id="errEmail">Valid email required</div>
+                </div>
+                <div class="form-group">
+                    <label>Phone Number</label>
+                    <div class="input-icon">
+                        <i class="fa-solid fa-phone"></i>
+                        <input type="tel" id="phone" placeholder="012-3456789" value="<%= user ? (user.phone || '') : '' %>">
+                    </div>
+                    <div class="err-msg" id="errPhone">Required</div>
+                </div>
+            </div>
+
+            <!-- Payment Information -->
+            <div class="form-section">
+                <h3>Payment Information</h3>
+                <div class="form-group">
+                    <label>Card Number</label>
+                    <div class="input-icon">
+                        <i class="fa-solid fa-credit-card"></i>
+                        <input type="text" id="cardNumber" placeholder="XXXX XXXX XXXX XXXX" maxlength="19">
+                    </div>
+                    <div class="err-msg" id="errCard">Valid 16-digit card number required</div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Expiry Month</label>
+                        <select id="expMonth">
+                            <option value="">Month</option>
+                            <% for(let m=1; m<=12; m++) { %>
+                            <option value="<%= m %>"><%= String(m).padStart(2,'0') %></option>
+                            <% } %>
+                        </select>
+                        <div class="err-msg" id="errMonth">Required</div>
+                    </div>
+                    <div class="form-group">
+                        <label>Expiry Year</label>
+                        <select id="expYear">
+                            <option value="">Year</option>
+                            <% for(let y=2025; y<=2035; y++) { %>
+                            <option value="<%= y %>"><%= y %></option>
+                            <% } %>
+                        </select>
+                        <div class="err-msg" id="errYear">Required</div>
+                    </div>
+                </div>
+                <div class="form-group" style="max-width:160px;">
+                    <label>CVV</label>
+                    <input type="password" id="cvv" placeholder="123" maxlength="3">
+                    <div class="err-msg" id="errCvv">3-digit CVV required</div>
+                </div>
+
+                <button class="place-order-btn" id="placeOrderBtn" onclick="placeOrder()">
+                    <i class="fa-solid fa-lock"></i> Place Order
+                </button>
+            </div>
+        </div>
+
+        <!-- RIGHT: Order Summary (sticky) -->
+        <div class="checkout-right">
+            <h2 style="border-bottom:2px solid #333; padding-bottom:12px; text-align:center; margin-top:0;">Order Summary</h2>
+            <div id="summaryItems" style="margin-bottom:10px;"></div>
+            <div class="sum-row"><span>Subtotal</span><strong id="sumSubtotal">RM 0.00</strong></div>
+            <div class="sum-row" style="color:#888; font-size:13px;"><span>Taxes</span><span>Calculated at checkout</span></div>
+            <hr style="border-color:#EEE; margin:14px 0;">
+            <div class="sum-row" style="font-size:22px; font-weight:bold;"><span>Total</span><span id="sumTotal">RM 0.00</span></div>
+            <div class="free-ship">
+                <i class="fa-regular fa-lightbulb" style="color:#F57F17;"></i>
+                <strong>Free Shipping</strong><br>
+                Orders over RM 150 qualify for free shipping!
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    renderCheckout();
+    // Auto-format card number with spaces
+    document.getElementById('cardNumber').addEventListener('input', function() {
+        let v = this.value.replace(/\D/g,'').slice(0,16);
+        this.value = v.replace(/(.{4})/g,'$1 ').trim();
+    });
+    // CVV only numbers
+    document.getElementById('cvv').addEventListener('input', function() {
+        this.value = this.value.replace(/\D/g,'').slice(0,3);
+    });
+});
+
+function getCart() { return JSON.parse(localStorage.getItem('eduCart') || '[]'); }
+
+function renderCheckout() {
+    const cart = getCart();
+    const container = document.getElementById('coItemsContainer');
+    const summaryItems = document.getElementById('summaryItems');
+
+    if (cart.length === 0) {
+        container.innerHTML = '<div style="text-align:center;padding:40px;color:#aaa;"><i class="fa-solid fa-cart-shopping" style="font-size:40px;display:block;margin-bottom:12px;"></i><p>Your cart is empty. <a href="/bookstore">Browse Books</a></p></div>';
+    } else {
+        container.innerHTML = cart.map((item, idx) => `
+            <div class="co-item">
+                <img src="${item.img || '/images/extracted/page1_img9.png'}" alt="${item.name}" onerror="this.src='/images/extracted/page1_img9.png'">
+                <div class="co-item-info">
+                    <span class="badge">E-Book</span>
+                    <h4>${item.name}</h4>
+                    <p class="price">RM ${parseFloat(item.price).toFixed(2)}</p>
+                </div>
+                <div class="qty-ctrl">
+                    <button class="qty-btn" onclick="changeQty(${idx},-1)">−</button>
+                    <span class="qty-val">${item.qty||1}</span>
+                    <button class="qty-btn" onclick="changeQty(${idx},1)">+</button>
+                    <button class="trash-btn" onclick="removeItem(${idx})"><i class="fa-solid fa-trash"></i></button>
+                </div>
+            </div>
+        `).join('');
+
+        summaryItems.innerHTML = cart.map(item => `
+            <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px;color:#555;">
+                <span>${item.name} × ${item.qty||1}</span>
+                <span>RM ${(parseFloat(item.price)*(item.qty||1)).toFixed(2)}</span>
+            </div>
+        `).join('');
+    }
+
+    const sub = cart.reduce((s,i) => s + parseFloat(i.price)*(i.qty||1), 0);
+    document.getElementById('sumSubtotal').textContent = 'RM ' + sub.toFixed(2);
+    document.getElementById('sumTotal').textContent    = 'RM ' + sub.toFixed(2);
+}
+
+function changeQty(idx, delta) {
+    let cart = getCart();
+    cart[idx].qty = Math.max(1, (cart[idx].qty||1) + delta);
+    localStorage.setItem('eduCart', JSON.stringify(cart));
+    refreshBadges();
+    renderCheckout();
+}
+function removeItem(idx) {
+    let cart = getCart();
+    cart.splice(idx, 1);
+    localStorage.setItem('eduCart', JSON.stringify(cart));
+    refreshBadges();
+    renderCheckout();
+}
+
+// ── Form Validation & Place Order ───────────────────────────────
+function showErr(id, show) {
+    const el = document.getElementById(id);
+    const inp = el ? el.previousElementSibling : null;
+    if (el) el.style.display = show ? 'block' : 'none';
+    // Also highlight the parent input
+    const input = document.getElementById(id.replace('err','').charAt(0).toLowerCase() + id.replace('err','').slice(1));
+    if (input) input.classList.toggle('error', show);
+}
+
+function placeOrder() {
+    const cart = getCart();
+    if (cart.length === 0) { alert('Your cart is empty!'); return; }
+
+    let valid = true;
+    const firstName = document.getElementById('firstName').value.trim();
+    const lastName  = document.getElementById('lastName').value.trim();
+    const email     = document.getElementById('email').value.trim();
+    const phone     = document.getElementById('phone').value.trim();
+    const card      = document.getElementById('cardNumber').value.replace(/\s/g,'');
+    const month     = document.getElementById('expMonth').value;
+    const year      = document.getElementById('expYear').value;
+    const cvv       = document.getElementById('cvv').value.trim();
+
+    if (!firstName) { showErr('errFirstName', true); valid=false; } else { showErr('errFirstName', false); }
+    if (!lastName)  { showErr('errLastName', true);  valid=false; } else { showErr('errLastName', false); }
+    if (!email || !/\S+@\S+\.\S+/.test(email)) { showErr('errEmail', true); valid=false; } else { showErr('errEmail', false); }
+    if (!phone)     { showErr('errPhone', true);     valid=false; } else { showErr('errPhone', false); }
+    if (card.length !== 16) { showErr('errCard', true); valid=false; } else { showErr('errCard', false); }
+    if (!month)     { showErr('errMonth', true);     valid=false; } else { showErr('errMonth', false); }
+    if (!year)      { showErr('errYear', true);      valid=false; } else { showErr('errYear', false); }
+    if (cvv.length !== 3) { showErr('errCvv', true); valid=false; } else { showErr('errCvv', false); }
+
+    if (!valid) return;
+
+    // Build order object and save to localStorage for confirmation page
+    const sub = cart.reduce((s,i) => s + parseFloat(i.price)*(i.qty||1), 0);
+    const orderNum = 'EB' + Date.now().toString().slice(-8);
+    const order = {
+        orderNum,
+        date: new Date().toLocaleDateString('en-MY', { year:'numeric', month:'long', day:'numeric' }),
+        time: new Date().toLocaleTimeString('en-MY', { hour:'2-digit', minute:'2-digit' }),
+        firstName, lastName, email, phone,
+        items: cart,
+        subtotal: sub.toFixed(2),
+        shipping: sub >= 150 ? 'FREE' : 'RM 10.00',
+        total: (sub >= 150 ? sub : sub + 10).toFixed(2)
+    };
+
+    const histKey = 'orderHistory_' + (typeof CURRENT_USER_EMAIL !== 'undefined' ? CURRENT_USER_EMAIL : 'guest');
+    const history = JSON.parse(localStorage.getItem(histKey) || '[]');
+    history.push(order);
+    localStorage.setItem(histKey, JSON.stringify(history));
+
+    localStorage.setItem('lastOrder', JSON.stringify(order));
+
+    // Show loading state
+    const btn = document.getElementById('placeOrderBtn');
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Processing...';
+    btn.disabled = true;
+
+    // Simulate payment processing (1.5s)
+    setTimeout(() => {
+        // Clear cart
+        localStorage.removeItem('eduCart');
+        refreshBadges();
+        window.location.href = '/bookstore/order-confirmation';
+    }, 1500);
+}
+</script>
+
+<%- include('../partials/footer.html') %>

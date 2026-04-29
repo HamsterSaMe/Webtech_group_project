@@ -1,0 +1,92 @@
+<%- include('../partials/header.html') %>
+<link rel="stylesheet" href="/css/index.css">
+
+<!-- Hero Section -->
+<section class="hero">
+    <h1><%= (typeof siteSettings !== 'undefined' && siteSettings.hero_title) ? siteSettings.hero_title : 'Empowering Your Academic Journey:' %><br>
+        <span><%= (typeof siteSettings !== 'undefined' && siteSettings.hero_subtitle) ? siteSettings.hero_subtitle : 'A Hub for Learning and Discovery' %></span>
+    </h1>
+    <p>Built for undergraduates, combining cutting-edge online courses, interactive Q&A, and a one-stop academic bookstore.</p>
+    <a href="/courses" class="btn btn-dark" style="width:fit-content; padding: 15px 30px; border-radius:30px;">Start Learning</a>
+</section>
+
+<!-- About Us -->
+<section class="about-section">
+    <div class="about-images">
+        <img src="/images/extracted/page1_img4.jpeg" class="about-img-1" alt="Books">
+        <img src="/images/extracted/page1_img5.jpeg" class="about-img-2" alt="Library">
+        <img src="/images/extracted/page1_img6.jpeg" class="about-img-3" alt="Student studying">
+    </div>
+    <div class="about-content">
+        <h2><i class="fa-solid fa-pen-nib"></i> About Us</h2>
+        <p>We are dedicated to breaking down resource barriers for undergraduate students. This platform is more than just an online learning site; it is a comprehensive digital ecosystem integrating academic books, peer collaboration, and personalized progress tracking. We understand the rigor of academic research, and our goal is to help students access verifiable knowledge, build a solid technical foundation, and excel in their studies.</p>
+    </div>
+</section>
+
+<!-- Pillars -->
+<section class="pillars-section">
+    <div class="pillar">
+        <div style="height:120px; background:#FFD8D8; border-radius:8px; margin-bottom:20px; display:flex; align-items:center; justify-content:center;"><i class="fa-solid fa-recycle" style="font-size:40px; color:#333;"></i></div>
+        <h4>Promoting a Circular Economy</h4>
+        <ul style="list-style:none; padding:0; margin-top:10px; font-size:14px;">
+            <li>• Resource Reuse</li>
+            <li>• Green Campus</li>
+        </ul>
+    </div>
+    <div class="pillar">
+        <img src="/images/extracted/page1_img5.jpeg" alt="Academic Integrity">
+        <h4>Defending Academic Integrity</h4>
+        <ul style="list-style:none; padding:0; margin-top:10px; font-size:14px;">
+            <li>• Vetted Materials</li>
+            <li>• Recent Literature</li>
+        </ul>
+    </div>
+    <div class="pillar">
+        <img src="/images/extracted/page1_img6.jpeg" alt="Education for All">
+        <h4>Accessible Education for All</h4>
+        <ul style="list-style:none; padding:0; margin-top:10px; font-size:14px;">
+            <li>• Inclusive Design</li>
+            <li>• Equal Opportunity</li>
+        </ul>
+    </div>
+</section>
+
+<!-- Popular Courses -->
+<section class="container">
+    <div class="section-header">
+        <h2>Popular Courses</h2>
+        <p>Pick your next learning adventure <a href="/courses" style="float:right; color:black; text-decoration:none;">View All &rarr;</a></p>
+    </div>
+    <div class="grid-3">
+        <% courses.forEach(course => { %>
+            <div class="card course-card" style="text-align:center;">
+                <img src="<%= course.image_url %>" alt="<%= course.title %>">
+                <h4><%= course.title %></h4>
+                <p style="font-size:12px; color:#666;">Instructor: <%= course.instructor %></p>
+                <p style="margin:10px 0;">⭐ <%= course.rating %> &nbsp;&nbsp; <%= course.students_count %> students</p>
+                <a href="/courses/<%= course.id %>" class="btn" style="background:#E2E8F0;">View Details</a>
+            </div>
+        <% }) %>
+    </div>
+</section>
+
+<!-- Popular Books -->
+<section class="container" style="background-color:#E8E3D9; border-radius:20px;">
+    <div class="section-header">
+        <h2>Popular Books Recommendations</h2>
+        <p>Expand your knowledge library <a href="/bookstore" style="float:right; color:black; text-decoration:none;">View All &rarr;</a></p>
+    </div>
+    <div class="grid-3">
+        <% books.forEach(book => { %>
+            <div class="card book-card" style="text-align:center;">
+                <img src="<%= book.image_url %>" alt="<%= book.title %>">
+                <h4><%= book.title %></h4>
+                <p style="font-size:12px; color:#666;"><%= book.author %></p>
+                <h3 style="margin:10px 0;">$<%= book.price %></h3>
+                <a href="/bookstore/book/<%= book.id %>" style="float:right; color:#666;"><i class="fa-solid fa-book-open"></i></a>
+            </div>
+        <% }) %>
+    </div>
+</section>
+
+<%- include('../partials/footer.html') %>

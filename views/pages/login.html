@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - EduLearning</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #FFF9ED 0%, #E8F5E9 50%, #E3F2FD 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .auth-card {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            border: 2px dashed #333;
+            width: 400px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        .icon-box {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #42A5F5, #1976D2);
+            color: white;
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 15px;
+            margin: 0 auto 20px;
+            transform: rotate(45deg);
+        }
+        .icon-box i {
+            transform: rotate(-45deg);
+        }
+        .input-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+        .input-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        .input-wrapper {
+            position: relative;
+        }
+        .input-wrapper i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #666;
+        }
+        .input-wrapper input {
+            width: 100%;
+            padding: 12px 15px 12px 40px;
+            border: 1px solid #CCC;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        .forgot-pass {
+            position: absolute;
+            right: 5px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: #EFEBE1;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+            text-decoration: none;
+            color: #333;
+        }
+        .btn-enter {
+            background: linear-gradient(90deg, #FFD54F, #FF8F00);
+            border: none;
+            padding: 12px 40px;
+            border-radius: 25px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            width: 150px;
+            margin-top: 10px;
+        }
+        
+        .role-toggle-container {
+            display: flex;
+            background: #EFEBE1;
+            border-radius: 30px;
+            padding: 4px;
+            margin: 0 auto 20px;
+            width: fit-content;
+        }
+        .role-toggle-btn {
+            padding: 8px 24px;
+            border-radius: 26px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            color: #666;
+            transition: 0.3s;
+            user-select: none;
+        }
+        .role-toggle-btn.active {
+            background: white;
+            color: #333;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+    <div style="position: absolute; top: 20px; left: 20px;">
+        <a href="/" style="text-decoration:none; color:#333; font-weight:bold;"><i class="fa-solid fa-arrow-left"></i> Back to Home</a>
+    </div>
+    
+    <div>
+        <div class="auth-card">
+            
+            <div class="role-toggle-container">
+                <div class="role-toggle-btn active" onclick="setRole('student', this)">Student</div>
+                <div class="role-toggle-btn" onclick="setRole('lecturer', this)">Lecturer</div>
+            </div>
+
+            <div class="icon-box">
+                <i class="fa-solid fa-lock"></i>
+            </div>
+            <h1 style="margin-bottom:5px;">Welcome Back</h1>
+            <p style="color:#666; margin-bottom:25px;">Ready to continue your journey?</p>
+
+            <% if (typeof error !== 'undefined') { %>
+                <p style="color:red; margin-bottom:15px;"><%= error %></p>
+            <% } %>
+
+            <form action="/auth/login" method="POST">
+                <input type="hidden" name="login_role" id="loginRoleInput" value="student">
+                <div class="input-group">
+                    <label>Email Address</label>
+                    <div class="input-wrapper">
+                        <i class="fa-regular fa-envelope"></i>
+                        <input type="email" name="email" placeholder="xxx@student.edu.my" required>
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label>Password</label>
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-key"></i>
+                        <input type="password" name="password" placeholder="xxxxxx" required>
+                        <a href="#" class="forgot-pass" onclick="openForgotModal()">I forgot</a>
+                    </div>
+                </div>
+                <button type="submit" class="btn-enter">Enter</button>
+            </form>
+        </div>
+        <p style="text-align:center; margin-top:20px;">Don't have an account? <a href="/auth/register" style="color:#FF8F00; text-decoration:none; font-weight:bold;">Sign Up</a></p>
+    </div>
+
+    <!-- Forgot Password Modal -->
+    <div class="modal-overlay" id="forgotModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); align-items:center; justify-content:center; z-index:1000;">
+        <div class="auth-card" style="width:350px; padding:30px; position:relative;">
+            <button onclick="closeForgotModal()" style="position:absolute; top:15px; right:15px; background:none; border:none; font-size:20px; cursor:pointer; color:#888;">&times;</button>
+            <h3 style="margin-top:0; margin-bottom:10px;">Reset Password</h3>
+            <p style="font-size:13px; color:#666; margin-bottom:20px; line-height:1.4;">Enter your registered email address and your new desired password.</p>
+            <form action="/auth/reset-password" method="POST">
+                <div class="input-group" style="margin-bottom:15px;">
+                    <div class="input-wrapper">
+                        <i class="fa-regular fa-envelope"></i>
+                        <input type="email" name="email" placeholder="Email Address" required>
+                    </div>
+                </div>
+                <div class="input-group" style="margin-bottom:20px;">
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-key"></i>
+                        <input type="password" name="new_password" placeholder="New Password" required minlength="6">
+                    </div>
+                </div>
+                <button type="submit" class="btn-enter" style="width:100%; border-radius:12px; margin-top:0;">Reset Password</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function setRole(role, el) {
+            // Update hidden input
+            document.getElementById('loginRoleInput').value = role;
+            
+            // Update UI toggle
+            document.querySelectorAll('.role-toggle-btn').forEach(btn => btn.classList.remove('active'));
+            el.classList.add('active');
+        }
+
+        function openForgotModal() {
+            document.getElementById('forgotModal').style.display = 'flex';
+        }
+
+        function closeForgotModal() {
+            document.getElementById('forgotModal').style.display = 'none';
+        }
+    </script>
+</body>
+</html>

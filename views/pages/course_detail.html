@@ -1,0 +1,544 @@
+<%- include('../partials/header.html') %>
+    <style>
+        .course-detail-header {
+            display: flex;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .video-container {
+            position: relative;
+            width: 100%;
+            background: black;
+            border-radius: 12px;
+            overflow: hidden;
+            padding-bottom: 56.25%;
+            height: 0;
+        }
+
+        .syllabus-card {
+            background: #5A5148;
+            color: white;
+            border-radius: 15px;
+            padding: 20px;
+        }
+
+        .download-card {
+            background: #5A5148;
+            border-radius: 15px;
+            padding: 20px;
+            color: white;
+            margin-top: 20px;
+        }
+
+        .file-item {
+            background: white;
+            color: black;
+            padding: 15px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            align-items: center;
+        }
+
+        .quiz-section {
+            background: #D3C9B9;
+            padding: 40px;
+            border-radius: 15px;
+            margin-top: 40px;
+        }
+
+        .quiz-question {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .quiz-option {
+            background: #F5EFEB;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 10px;
+            cursor: pointer;
+            transition: background 0.2s, border 0.2s;
+        }
+
+        .quiz-option:hover {
+            background: #ffe8cc;
+        }
+
+        #quizSubmitBtn {
+            width: 200px;
+            font-size: 20px;
+            padding: 15px;
+        }
+
+        #quizSubmitBtn.completed {
+            background: #4CAF50 !important;
+            color: white !important;
+            pointer-events: none;
+            cursor: default;
+        }
+
+        .syllabus-item {
+            transition: background 0.2s;
+        }
+
+        .syllabus-item.done-lesson i {
+            color: #4CAF50 !important;
+        }
+    </style>
+
+<%
+    // Parse course chapters once at the top — available throughout the whole template
+    var chapters = [];
+    try {
+        if (course.content) chapters = JSON.parse(course.content);
+    } catch(e) {}
+    if (chapters.length === 0 && course.id <= 5) {
+        chapters = [
+            { title: 'Chapter 1: Introduction to ' + course.title, status: 'uploaded', videoId: '', notesFile: '', quizzes: [] },
+            { title: 'Chapter 2: Core Concepts', status: 'uploaded', videoId: '', notesFile: '', quizzes: [] },
+            { title: 'Chapter 3: Advanced Implementation', status: 'pending', videoId: '', notesFile: '', quizzes: [] },
+            { title: 'Chapter 4: Case Studies', status: 'pending', videoId: '', notesFile: '', quizzes: [] }
+        ];
+    }
+%>
+
+    <div class="container" style="display: flex; gap: 30px;">
+
+        <!-- Left Column: Video and Downloads -->
+        <div style="flex: 2;">
+            <div class="course-detail-header" style="background: white; padding: 20px; border-radius: 15px;">
+                <img src="<%= course.image_url %>" style="width: 200px; border-radius: 10px; object-fit: cover;">
+                <div>
+                    <h2>
+                        <%= course.title %>
+                    </h2>
+                    <p>
+                        <%= course.instructor %>
+                    </p>
+                    <p style="color: #666; margin: 5px 0;"><i class="fa-solid fa-users"></i>
+                        <%= course.students_count ? course.students_count.toLocaleString() : 0 %> students &nbsp;&nbsp;
+                            <i class="fa-solid fa-hourglass-half"></i>
+                            <%= course.duration %>
+                    </p>
+                    <p style="color: #FFAD42;">⭐⭐⭐⭐⭐</p>
+                    <div style="display:flex; align-items:center; gap: 15px;">
+                        <button id="enrollBtn" class="btn btn-primary" style="margin-top: 10px;">Enroll Now</button>
+                        <button id="cancelEnrollBtn" class="btn"
+                            style="background: #dc3545; color: white; display: none; margin-top: 10px; border: none; font-weight: bold; padding: 10px 18px; border-radius: 8px; cursor:pointer;">Cancel
+                            Enrollment</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="video-container" id="videoContainer">
+                <%
+                    // Get video for the first chapter
+                    var firstVideoId = 'c9Wg6Cb_YlU'; // fallback default
+                    if (chapters.length > 0 && chapters[0].videoId) {
+                        firstVideoId = chapters[0].videoId;
+                    }
+                %>
+                <iframe id="lessonIframe" src="https://www.youtube.com/embed/<%= firstVideoId %>"
+                    style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none;"
+                    allowfullscreen></iframe>
+            </div>
+
+            <div style="background: white; padding: 20px; border-radius: 15px; margin-top: 20px;">
+                <h3>About this lesson</h3>
+                <p id="lessonDesc" style="margin-top: 10px; color: #555;">In this foundational lesson, we explore the
+                    core principles of <%= course.title %>. You'll learn how to leverage fundamental techniques to excel
+                        in this field.</p>
+            </div>
+
+            <div class="download-card">
+                <h3 style="margin-bottom: 20px;">Downloadable Materials</h3>
+                <%
+                    var hasAnyNotes = chapters.some(c => c.notesFile && c.notesFile.trim());
+                %>
+                <% if (hasAnyNotes) { %>
+                    <% chapters.forEach((chp, idx) => { %>
+                        <% if (chp.notesFile && chp.notesFile.trim()) { %>
+                            <a href="/download/<%= chp.notesFile %>" class="file-item file-download-link"
+                                style="text-decoration:none; cursor: pointer;">
+                                <span><%= chp.notesFile %> (<%= chp.title %>)</span>
+                                <i class="fa-solid fa-download"></i>
+                            </a>
+                        <% } %>
+                    <% }) %>
+                <% } else { %>
+                    <a href="/download/EduLearning.pdf" class="file-item file-download-link"
+                        style="text-decoration:none; cursor: pointer;">
+                        <span>EduLearning.pdf</span>
+                        <i class="fa-solid fa-download"></i>
+                    </a>
+                <% } %>
+            </div>
+        </div>
+
+        <!-- Right Column: Syllabus -->
+        <div style="flex: 1;">
+            <div class="syllabus-card">
+                <h2 style="text-align: center; margin-bottom: 20px;">Course Syllabus</h2>
+                <ul id="syllabusList" style="list-style: none; padding: 0;">
+                    <% chapters.forEach((chp, index) => { %>
+                        <li class="syllabus-item" data-index="<%= index %>"
+                            data-video="<%= chp.videoId || 'c9Wg6Cb_YlU' %>"
+                            data-desc="Learn about <%= chp.title %> in this detailed chapter for <%= course.title %>."
+                            style="margin-bottom: 15px; cursor:pointer; padding:8px; border-radius:5px;">
+                            <i class="fa-solid <%= index===0 ? 'fa-circle-play' : 'fa-lock' %>"
+                                style="color: <%= index===0 ? '#FFAD42' : '#AAA' %>;"></i>
+                            <%= chp.title %>
+                        </li>
+                    <% }) %>
+                    <% if (chapters.length===0) { %>
+                        <li style="color:#aaa;">No chapters available yet.</li>
+                    <% } %>
+                </ul>
+                <hr style="border-color: #777; margin: 20px 0;">
+                <p>Overall Progress</p>
+                <div style="background: #444; height: 10px; border-radius: 5px; margin-top: 5px;">
+                    <div id="progressBar"
+                        style="background: #FFAD42; height: 100%; width: 0%; border-radius: 5px; transition: 0.5s;">
+                    </div>
+                </div>
+                <p id="progressText" style="font-size: 12px; margin-top: 5px; text-align: right;">0 of <%=
+                        chapters.length %> lessons completed</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quiz Section -->
+    <div class="container quiz-section" id="quizSection" style="opacity: 0.5; pointer-events: none; transition: 0.3s;">
+        <h2 id="quizTitle" style="margin-bottom: 10px;">Quiz Knowledge Check (Unlock by Enrolling)</h2>
+        <p id="quizLessonLabel" style="color: #888; margin-bottom: 20px;"></p>
+
+        <div class="quiz-question" id="quizQuestionBox">
+            <h4 id="quizQuestionText"></h4>
+            <div id="quizOptionsBox"></div>
+        </div>
+
+        <div style="text-align: center;">
+            <button id="quizSubmitBtn" class="btn btn-primary"
+                style="width: 220px; font-size: 18px; padding: 15px;">Submit Answer</button>
+        </div>
+        <div id="quizFeedback" style="text-align:center; margin-top:20px; font-weight:bold; font-size:18px;"></div>
+    </div>
+
+    <script>
+        // ─── Per-course state key ─────────────────────────────────────────
+        const COURSE_ID = '<%= course.id %>';
+        const STATE_KEY = 'edulearning_course_' + (typeof CURRENT_USER_EMAIL !== 'undefined' ? CURRENT_USER_EMAIL + '_' : '') + COURSE_ID;
+
+        // ─── Dynamic quiz data from chapter content ─────────────────
+        const CHAPTER_QUIZZES = <%- JSON.stringify(chapters.map(c => c.quizzes || [])) %>;
+        // Build QUIZZES array - use chapter quizzes if available, else fallback
+        const QUIZZES = CHAPTER_QUIZZES.map((q, i) => {
+            if (q && q.length > 0) return q[0]; // use first quiz of the chapter
+            // fallback defaults
+            return [
+                { question: 'What is the primary goal of this course?', options: [
+                    { text: 'To memorize textbook definitions.', correct: false },
+                    { text: 'To understand and practically apply the key concepts.', correct: true },
+                    { text: 'To pass a standard multiple choice test.', correct: false }
+                ]},
+            ][0];
+        });
+        // All quizzes per chapter for rendering
+        const ALL_CHAPTER_QUIZZES = CHAPTER_QUIZZES;
+
+        // ─── Load / Save state from localStorage ─────────────────────────
+        function loadState() {
+            const raw = localStorage.getItem(STATE_KEY);
+            if (raw) return JSON.parse(raw);
+            return { isEnrolled: false, completedQuizzes: [], activeLesson: 0 };
+        }
+        function saveState(state) {
+            localStorage.setItem(STATE_KEY, JSON.stringify(state));
+        }
+        function clearState() {
+            localStorage.removeItem(STATE_KEY);
+        }
+
+        // ─── DOM refs ─────────────────────────────────────────────────────
+        document.addEventListener('DOMContentLoaded', () => {
+            const enrollBtn = document.getElementById('enrollBtn');
+            const cancelEnrollBtn = document.getElementById('cancelEnrollBtn');
+            const quizSection = document.getElementById('quizSection');
+            const quizTitle = document.getElementById('quizTitle');
+            const quizLessonLabel = document.getElementById('quizLessonLabel');
+            const quizQuestionText = document.getElementById('quizQuestionText');
+            const quizOptionsBox = document.getElementById('quizOptionsBox');
+            const quizSubmitBtn = document.getElementById('quizSubmitBtn');
+            const quizFeedback = document.getElementById('quizFeedback');
+            const progressBar = document.getElementById('progressBar');
+            const progressText = document.getElementById('progressText');
+            const lessonIframe = document.getElementById('lessonIframe');
+            const lessonDesc = document.getElementById('lessonDesc');
+            const syllabusItems = document.querySelectorAll('.syllabus-item');
+
+            let state = loadState();
+            let activeLesson = state.activeLesson || 0;
+            let selectedOption = null;
+
+            // ─── Render quiz for a lesson ──────────────────────────────
+            const CHAPTERS_COUNT = <%= chapters.length %>;
+            const CHAPTER_NAMES = <%- JSON.stringify(chapters.map(c => c.title)) %>;
+
+            function renderQuiz(lessonIndex) {
+                if (CHAPTERS_COUNT === 0) return;
+                let quiz = QUIZZES[lessonIndex];
+                if (!quiz) {
+                    quiz = {
+                        question: 'What is the main topic of ' + (CHAPTER_NAMES[lessonIndex] || 'this lesson') + '?',
+                        options: [
+                            { text: 'Correct understanding of the concepts.', correct: true },
+                            { text: 'Incorrect understanding.', correct: false }
+                        ]
+                    };
+                }
+
+                quizLessonLabel.textContent = '📖 Current Lesson: ' + (CHAPTER_NAMES[lessonIndex] || 'Lesson ' + (lessonIndex + 1));
+                quizQuestionText.textContent = quiz.question;
+                quizOptionsBox.innerHTML = '';
+                selectedOption = null;
+                quizFeedback.textContent = '';
+
+                const isDone = state.completedQuizzes.includes(lessonIndex);
+
+                quiz.options.forEach((opt, i) => {
+                    const div = document.createElement('div');
+                    div.className = 'quiz-option';
+                    div.textContent = opt.text;
+                    div.dataset.correct = opt.correct;
+                    if (isDone) {
+                        div.style.pointerEvents = 'none';
+                        if (opt.correct) {
+                            div.style.background = '#d4edda';
+                            div.style.border = '2px solid #4CAF50';
+                        }
+                    } else {
+                        div.addEventListener('click', () => {
+                            document.querySelectorAll('.quiz-option').forEach(o => {
+                                o.style.background = '#F5EFEB';
+                                o.style.border = 'none';
+                            });
+                            div.style.background = '#FFF3E0';
+                            div.style.border = '2px solid #FFAD42';
+                            selectedOption = div;
+                        });
+                    }
+                    quizOptionsBox.appendChild(div);
+                });
+
+                // Submit button state
+                if (isDone) {
+                    quizSubmitBtn.textContent = '✔ Quiz Completed';
+                    quizSubmitBtn.classList.add('completed');
+                    quizSubmitBtn.style.background = '#4CAF50';
+                    quizSubmitBtn.style.color = 'white';
+                    quizSubmitBtn.style.pointerEvents = 'none';
+                } else {
+                    quizSubmitBtn.textContent = 'Submit Answer';
+                    quizSubmitBtn.classList.remove('completed');
+                    quizSubmitBtn.style.background = '';
+                    quizSubmitBtn.style.color = '';
+                    quizSubmitBtn.style.pointerEvents = 'auto';
+                }
+            }
+
+            // ─── Update progress bar ───────────────────────────────────
+            function updateProgress() {
+                const count = state.completedQuizzes.length;
+                const total = CHAPTERS_COUNT > 0 ? CHAPTERS_COUNT : 1;
+                const pct = (count / total) * 100;
+                progressBar.style.width = pct + '%';
+                progressText.textContent = count + ' of ' + total + ' lessons completed';
+            }
+
+            // ─── Apply enrolled UI ─────────────────────────────────────
+            function applyEnrolledState() {
+                enrollBtn.textContent = 'Enrolled ✓';
+                enrollBtn.style.background = '#4CAF50';
+                enrollBtn.style.color = 'white';
+                enrollBtn.style.pointerEvents = 'none';
+                cancelEnrollBtn.style.display = 'inline-block';
+
+                quizSection.style.opacity = '1';
+                quizSection.style.pointerEvents = 'auto';
+                quizTitle.textContent = 'Quiz Knowledge Check';
+
+                // Unlock all syllabus items
+                syllabusItems.forEach((item, idx) => {
+                    const icon = item.querySelector('i');
+                    if (state.completedQuizzes.includes(idx)) {
+                        icon.className = 'fa-solid fa-circle-check';
+                        icon.style.color = '#4CAF50';
+                    } else {
+                        icon.className = 'fa-regular fa-circle';
+                        icon.style.color = 'white';
+                    }
+                });
+
+                // Restore active lesson highlight
+                syllabusItems.forEach(i => i.style.background = 'transparent');
+                syllabusItems[activeLesson].style.background = 'rgba(255,255,255,0.15)';
+
+                // Restore video and description
+                const activeItem = syllabusItems[activeLesson];
+                const videoId = activeItem.getAttribute('data-video');
+                const desc = activeItem.getAttribute('data-desc');
+                lessonIframe.src = 'https://www.youtube.com/embed/' + videoId;
+                lessonDesc.textContent = desc;
+
+                renderQuiz(activeLesson);
+                updateProgress();
+            }
+
+            // ─── Apply unenrolled UI ───────────────────────────────────
+            function applyUnenrolledState() {
+                enrollBtn.textContent = 'Enroll Now';
+                enrollBtn.style.background = '';
+                enrollBtn.style.color = '';
+                enrollBtn.style.pointerEvents = 'auto';
+                cancelEnrollBtn.style.display = 'none';
+
+                quizSection.style.opacity = '0.5';
+                quizSection.style.pointerEvents = 'none';
+                quizTitle.textContent = 'Quiz Knowledge Check (Unlock by Enrolling)';
+
+                syllabusItems.forEach((item, idx) => {
+                    item.style.background = 'transparent';
+                    const icon = item.querySelector('i');
+                    if (idx === 0) {
+                        icon.className = 'fa-solid fa-circle-play';
+                        icon.style.color = '#FFAD42';
+                    } else {
+                        icon.className = 'fa-solid fa-lock';
+                        icon.style.color = '#AAA';
+                    }
+                });
+                syllabusItems[0].style.background = 'rgba(255,255,255,0.1)';
+
+                lessonIframe.src = 'https://www.youtube.com/embed/c9Wg6Cb_YlU';
+                lessonDesc.textContent = syllabusItems[0].getAttribute('data-desc');
+
+                progressBar.style.width = '0%';
+                progressText.textContent = '0 of 4 lessons completed';
+                quizLessonLabel.textContent = '';
+                quizQuestionText.textContent = '';
+                quizOptionsBox.innerHTML = '';
+                quizFeedback.textContent = '';
+                quizSubmitBtn.textContent = 'Submit Answer';
+                quizSubmitBtn.classList.remove('completed');
+                quizSubmitBtn.style.background = '';
+                quizSubmitBtn.style.color = '';
+            }
+
+            // ─── Init on page load ─────────────────────────────────────
+            if (state.isEnrolled) {
+                applyEnrolledState();
+            } else {
+                applyUnenrolledState();
+            }
+
+            // ─── Enroll ────────────────────────────────────────────────
+            enrollBtn.addEventListener('click', () => {
+                state.isEnrolled = true;
+                state.completedQuizzes = [];
+                state.activeLesson = 0;
+                activeLesson = 0;
+                saveState(state);
+                applyEnrolledState();
+            });
+
+            // ─── Cancel Enrollment ─────────────────────────────────────
+            cancelEnrollBtn.addEventListener('click', () => {
+                if (confirm('Are you sure you want to cancel your enrollment? All progress will be lost.')) {
+                    clearState();
+                    state = { isEnrolled: false, completedQuizzes: [], activeLesson: 0 };
+                    activeLesson = 0;
+                    applyUnenrolledState();
+                }
+            });
+
+            // ─── Syllabus click ────────────────────────────────────────
+            const CHAPTERS_DATA = <%- JSON.stringify(chapters) %>;
+            syllabusItems.forEach((item, idx) => {
+                item.addEventListener('click', () => {
+                    if (!state.isEnrolled) {
+                        alert('Please enroll to access lessons!');
+                        return;
+                    }
+                    activeLesson = idx;
+                    state.activeLesson = idx;
+                    saveState(state);
+
+                    // Highlight active
+                    syllabusItems.forEach(i => i.style.background = 'transparent');
+                    item.style.background = 'rgba(255,255,255,0.15)';
+
+                    // Update video — use chapter's saved videoId if available
+                    const chpData = CHAPTERS_DATA[idx];
+                    const chpVideoId = chpData && chpData.videoId ? chpData.videoId : (item.getAttribute('data-video') || 'c9Wg6Cb_YlU');
+                    lessonIframe.src = 'https://www.youtube.com/embed/' + chpVideoId + '?autoplay=1';
+
+                    // Update description
+                    lessonDesc.textContent = item.getAttribute('data-desc');
+
+                    // Render quiz for this lesson
+                    renderQuiz(idx);
+                    quizFeedback.textContent = '';
+                });
+            });
+
+            // ─── Downloadable Materials ────────────────────────────────
+            document.querySelectorAll('.file-download-link').forEach(link => {
+                link.addEventListener('click', (e) => {
+                    if (!state.isEnrolled) {
+                        e.preventDefault();
+                        alert('Please enroll to download materials!');
+                    }
+                });
+            });
+
+            // ─── Quiz Submit ───────────────────────────────────────────
+            quizSubmitBtn.addEventListener('click', () => {
+                if (state.completedQuizzes.includes(activeLesson)) return;
+
+                if (!selectedOption) {
+                    quizFeedback.textContent = 'Please select an answer!';
+                    quizFeedback.style.color = 'red';
+                    return;
+                }
+
+                const isCorrect = selectedOption.dataset.correct === 'true';
+                if (isCorrect) {
+                    // Mark complete
+                    if (!state.completedQuizzes.includes(activeLesson)) {
+                        state.completedQuizzes.push(activeLesson);
+                    }
+                    saveState(state);
+
+                    quizFeedback.textContent = '✔ Correct! +50 XP earned!';
+                    quizFeedback.style.color = '#4CAF50';
+
+                    // Update syllabus icon
+                    syllabusItems[activeLesson].querySelector('i').className = 'fa-solid fa-circle-check';
+                    syllabusItems[activeLesson].querySelector('i').style.color = '#4CAF50';
+
+                    updateProgress();
+                    renderQuiz(activeLesson); // re-render to show completed state
+                } else {
+                    quizFeedback.textContent = '✘ Incorrect. Please try again!';
+                    quizFeedback.style.color = 'red';
+                }
+            });
+        });
+    </script>
+
+    <%- include('../partials/footer.html') %>

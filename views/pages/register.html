@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - EduLearning</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #FFF9ED 0%, #E8F5E9 50%, #E3F2FD 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 40px 0;
+        }
+        .auth-card {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            border: 2px dashed #333;
+            width: 450px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        .icon-box {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #42A5F5, #1976D2);
+            color: white;
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 15px;
+            margin: 0 auto 20px;
+            transform: rotate(45deg);
+        }
+        .icon-box i {
+            transform: rotate(-45deg);
+        }
+        .input-group {
+            margin-bottom: 15px;
+            text-align: left;
+        }
+        .input-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+        .input-wrapper {
+            position: relative;
+        }
+        .input-wrapper i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #666;
+        }
+        .input-wrapper input {
+            width: 100%;
+            padding: 10px 15px 10px 40px;
+            border: 1px solid #CCC;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        .password-reqs {
+            text-align: left;
+            font-size: 11px;
+            color: #666;
+            margin-bottom: 15px;
+            line-height: 1.4;
+        }
+        .btn-enter {
+            background: linear-gradient(90deg, #FFD54F, #FF8F00);
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div style="position: absolute; top: 20px; left: 20px;">
+        <a href="/" style="text-decoration:none; color:#333; font-weight:bold;"><i class="fa-solid fa-arrow-left"></i> Back to Home</a>
+    </div>
+
+    <div>
+        <div class="auth-card">
+            <div class="icon-box">
+                <i class="fa-solid fa-lock"></i>
+            </div>
+            <h1 style="margin-bottom:5px;">Join the Adventure</h1>
+            <p style="color:#666; margin-bottom:20px;">Create an account to start earning XP.</p>
+
+            <% if (typeof error !== 'undefined') { %>
+                <p style="color:red; margin-bottom:15px;"><%= error %></p>
+            <% } %>
+
+            <form action="/auth/register" method="POST">
+                <div class="input-group">
+                    <label>Full Name</label>
+                    <input type="text" name="full_name" required style="width: 100%; padding: 10px; border: 1px solid #CCC; border-radius: 8px;">
+                </div>
+                <div class="input-group">
+                    <label>Phone Number</label>
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-phone"></i>
+                        <input type="text" name="phone" placeholder="012-3456789" required>
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label>Role</label>
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-user-graduate"></i>
+                        <select name="role" required style="width: 100%; padding: 10px 15px 10px 40px; border: 1px solid #CCC; border-radius: 8px; font-size: 14px; background: white; appearance: none;">
+                            <option value="student">Student</option>
+                            <option value="lecturer">Lecturer</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label>Email Address</label>
+                    <div class="input-wrapper">
+                        <i class="fa-regular fa-envelope"></i>
+                        <input type="email" name="email" placeholder="xxx@student.edu.my" required>
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label>Password</label>
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-key"></i>
+                        <input type="password" name="password" placeholder="Create a strong password" required>
+                    </div>
+                </div>
+                <div class="password-reqs">
+                    Password requirements:<br>
+                    ✓ At least 8 characters<br>
+                    ✓ One uppercase & lowercase letter<br>
+                    ✓ One number (0-9)<br>
+                    ✓ One special character (@, #, %, etc.)
+                </div>
+                <div class="input-group">
+                    <label>Confirm Password</label>
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-key"></i>
+                        <input type="password" name="confirm_password" placeholder="Confirm your password" required>
+                    </div>
+                </div>
+                
+                <div style="text-align: left; font-size: 12px; margin-bottom: 15px;">
+                    <input type="checkbox" required id="terms">
+                    <label for="terms">I agree to the <span style="color:#FF8F00;">Terms of Services</span> and <span style="color:#FF8F00;">Privacy Policy</span></label>
+                </div>
+
+                <button type="submit" class="btn-enter">Create Account</button>
+            </form>
+        </div>
+        <p style="text-align:center; margin-top:20px;">Already have an account? <a href="/auth/login" style="color:#FF8F00; text-decoration:none; font-weight:bold;">Log in</a></p>
+    </div>
+</body>
+</html>
