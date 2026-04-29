@@ -138,7 +138,7 @@
                 <p style="color:red; margin-bottom:15px;"><%= error %></p>
             <% } %>
 
-            <form action="/auth/login" method="POST">
+            <form action="/auth/login<%= (typeof redirect !== 'undefined' && redirect) ? '?redirect=' + redirect : '' %>" method="POST">
                 <input type="hidden" name="login_role" id="loginRoleInput" value="student">
                 <div class="input-group">
                     <label>Email Address</label>

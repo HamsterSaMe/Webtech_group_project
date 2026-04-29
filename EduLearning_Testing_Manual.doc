@@ -1,0 +1,274 @@
+<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+<head>
+<meta charset="utf-8">
+<title>EduLearning Testing Manual</title>
+<style>
+  body { font-family: 'Calibri', sans-serif; }
+  table { border-collapse: collapse; width: 100%; margin-bottom: 20px; }
+  th, td { border: 1px solid #000; padding: 8px; text-align: left; }
+  th { background-color: #f2f2f2; }
+  h1 { color: #2e6c80; }
+  h2 { color: #3b8a4a; margin-top: 30px; }
+</style>
+</head>
+<body>
+<h1>EduLearning Website - Testing &amp; Evaluation Manual</h1>
+<p>This manual is designed for the testing team to verify all features of the EduLearning platform. Please follow the test guidelines below before executing the test cases. Record your observations (Pass/Fail) along with any bugs found for the final project report.</p>
+<h2>📋 General Test Guidelines</h2>
+<p>Before starting the tests, please ensure the following:</p>
+<ol>
+<li><strong>Environment Setup:</strong> Ensure the server is running locally (<code>http://localhost:3000</code>) or access the deployed version at <code>https://edulearning.hamstersame.org</code>.</li>
+<li><strong>Fresh State:</strong> For the most accurate results, test with a fresh browser session (or Incognito mode) to ensure no leftover session data interferes with the Authentication tests.</li>
+<li><strong>Data Integrity:</strong> When creating dummy data (e.g., test students or test books), use clearly identifiable names (like &quot;Test_Student_1&quot;) so they can be easily deleted later by the Admin.</li>
+<li><strong>Documentation:</strong> If a test <strong>Fails</strong>, take a screenshot of the error, open the browser console (F12) to capture any red error messages, and note the exact steps that caused the failure.</li>
+<li><strong>Cross-Browser Testing (Optional but Recommended):</strong> Try testing on at least two different browsers (e.g., Chrome and Safari/Firefox) to ensure the UI looks consistent.</li>
+</ol>
+<hr>
+<h2>🟢 1. Authentication &amp; User Roles Testing</h2>
+<p><strong>Objective:</strong> Verify that users can register, log in, and that the system correctly differentiates between Students, Lecturers, and the Admin.</p>
+<table>
+<thead>
+<tr>
+<th align="left">Test ID</th>
+<th align="left">Action to Perform</th>
+<th align="left">Expected Result</th>
+<th align="left">Pass/Fail</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">AUTH-01</td>
+<td align="left">Navigate to <code>/login</code> and click &quot;Sign Up&quot;. Register a new account with the role &quot;Student&quot;.</td>
+<td align="left">Account is created, user is redirected to login, and logs in successfully as a Student.</td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">AUTH-02</td>
+<td align="left">Register a second account with the role &quot;Lecturer&quot;.</td>
+<td align="left">Account is created and logs in successfully. Profile shows &quot;Teaching Portfolio&quot;.</td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">AUTH-03</td>
+<td align="left">Log in using the preset Admin credentials (<code>admin@edulearning.com</code> / <code>admin123</code>).</td>
+<td align="left">The header displays the &quot;Admin Portal&quot; shield icon instead of a standard profile.</td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">AUTH-04</td>
+<td align="left">Enter incorrect password for an existing account.</td>
+<td align="left">The system shows an &quot;Invalid email or password&quot; error message.</td>
+<td align="left"></td>
+</tr>
+</tbody></table>
+<hr>
+<h2>🟢 2. Student Portal &amp; Profile Tracking</h2>
+<p><strong>Objective:</strong> Ensure the student dashboard correctly tracks and displays personalized user data.</p>
+<table>
+<thead>
+<tr>
+<th align="left">Test ID</th>
+<th align="left">Action to Perform</th>
+<th align="left">Expected Result</th>
+<th align="left">Pass/Fail</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">STU-01</td>
+<td align="left">Log in as a Student and go to Profile. Check personal details.</td>
+<td align="left">Name, email, and role are displayed correctly.</td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">STU-02</td>
+<td align="left">Navigate to the <strong>Courses</strong> page and click on a course.</td>
+<td align="left">The course details load, and the course is automatically added to &quot;Enrolled Courses&quot; in the profile.</td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">STU-03</td>
+<td align="left">Complete a quiz in the course. Go back to Profile.</td>
+<td align="left">The &quot;Overall Progress&quot; bar increases, showing progression.</td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">STU-04</td>
+<td align="left">Go to the <strong>Bookstore</strong>, click the &quot;Heart&quot; icon on a book.</td>
+<td align="left">The icon turns red.</td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">STU-05</td>
+<td align="left">Go to Profile -&gt; Resource Vault.</td>
+<td align="left">The &quot;favourited&quot; book appears in the vault.</td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">STU-06</td>
+<td align="left">In the Resource Vault, click the &quot;Remove&quot; button on the book.</td>
+<td align="left">The book is successfully removed from the favourites list.</td>
+<td align="left"></td>
+</tr>
+</tbody></table>
+<hr>
+<h2>🟢 3. Lecturer Course Management (Dynamic Content)</h2>
+<p><strong>Objective:</strong> Verify that lecturers can dynamically upload and manage their course content, and that students see those updates.</p>
+<table>
+<thead>
+<tr>
+<th align="left">Test ID</th>
+<th align="left">Action to Perform</th>
+<th align="left">Expected Result</th>
+<th align="left">Pass/Fail</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">LEC-01</td>
+<td align="left">Log in as a Lecturer. Go to Profile -&gt; Teaching Portfolio. Click &quot;Manage Content&quot; on a course.</td>
+<td align="left">The course editor panel opens.</td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">LEC-02</td>
+<td align="left">Click &quot;Edit&quot; on a Chapter. Paste a YouTube URL, select a PDF file from your computer, and add a test MCQ question.</td>
+<td align="left">The video preview loads automatically. The PDF filename appears.</td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">LEC-03</td>
+<td align="left">Click &quot;Save &amp; Publish&quot;.</td>
+<td align="left">The button shows a loading state and successfully saves the chapter data to the database.</td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">LEC-04</td>
+<td align="left">Log in as a Student and visit the edited course.</td>
+<td align="left">The specific YouTube video plays, the uploaded PDF is available for download, and the custom quiz appears.</td>
+<td align="left"></td>
+</tr>
+</tbody></table>
+<hr>
+<h2>🟢 4. Bookstore &amp; E-Commerce Module</h2>
+<p><strong>Objective:</strong> Test the full shopping cart and checkout pipeline.</p>
+<table>
+<thead>
+<tr>
+<th align="left">Test ID</th>
+<th align="left">Action to Perform</th>
+<th align="left">Expected Result</th>
+<th align="left">Pass/Fail</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">SHOP-01</td>
+<td align="left">Go to <strong>Bookstore</strong>. Use the category filter buttons at the top.</td>
+<td align="left">The book list filters to show only books matching the selected category.</td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">SHOP-02</td>
+<td align="left">Click &quot;Add to Cart&quot; on two different books.</td>
+<td align="left">The cart notification pops up, and the cart icon counter updates.</td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">SHOP-03</td>
+<td align="left">Click the cart icon to open the shopping cart sidebar.</td>
+<td align="left">The selected books are listed with correct prices. The subtotal is accurately calculated.</td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">SHOP-04</td>
+<td align="left">Click &quot;Proceed to Checkout&quot;. Fill in dummy payment details and submit.</td>
+<td align="left">The payment processes and redirects to the Order Confirmation page.</td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">SHOP-05</td>
+<td align="left">On the Order Confirmation page, click &quot;Download Receipt (PDF)&quot;.</td>
+<td align="left">A PDF receipt is generated and downloaded to the computer with the correct order details.</td>
+<td align="left"></td>
+</tr>
+</tbody></table>
+<hr>
+<h2>🟢 5. Discussion Forum &amp; Community</h2>
+<p><strong>Objective:</strong> Verify community interaction features.</p>
+<table>
+<thead>
+<tr>
+<th align="left">Test ID</th>
+<th align="left">Action to Perform</th>
+<th align="left">Expected Result</th>
+<th align="left">Pass/Fail</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">FORUM-01</td>
+<td align="left">Go to <strong>Forum</strong>. Type a question in the &quot;Ask a Question&quot; box and submit.</td>
+<td align="left">The question instantly appears at the top of the discussion feed.</td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">FORUM-02</td>
+<td align="left">Click the &quot;Like&quot; (Heart) button on any post.</td>
+<td align="left">The like count increases by 1 and the heart turns red.</td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">FORUM-03</td>
+<td align="left">Click the &quot;Like&quot; button again on the same post.</td>
+<td align="left">The like is cancelled (count decreases by 1) and the heart turns grey.</td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">FORUM-04</td>
+<td align="left">Type a reply in the &quot;Write a reply...&quot; input box of a post.</td>
+<td align="left">The reply is appended under the post.</td>
+<td align="left"></td>
+</tr>
+</tbody></table>
+<hr>
+<h2>🟢 6. Admin Portal &amp; System Control</h2>
+<p><strong>Objective:</strong> Test the administrative capabilities for data management.</p>
+<table>
+<thead>
+<tr>
+<th align="left">Test ID</th>
+<th align="left">Action to Perform</th>
+<th align="left">Expected Result</th>
+<th align="left">Pass/Fail</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">ADM-01</td>
+<td align="left">Log in as Admin and click the Shield icon to enter the Admin Portal.</td>
+<td align="left">The Dashboard loads, displaying accurate counts for Registered Students, Lecturers, Courses, and Books.</td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">ADM-02</td>
+<td align="left">Go to &quot;Manage Courses&quot; tab. Ensure the table has 10 items per page.</td>
+<td align="left">Pagination controls (Next/Previous) work without reloading the web page.</td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">ADM-03</td>
+<td align="left">Click &quot;Add Course&quot;. Fill the form and submit.</td>
+<td align="left">The new course is saved to the database and appears in both the Admin table and the public Courses page.</td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">ADM-04</td>
+<td align="left">Go to &quot;Manage Books&quot;. Click &quot;Add Book&quot; and select a category from the dropdown to prevent syntax errors.</td>
+<td align="left">The new book is added and is correctly categorized in the public Bookstore.</td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">ADM-05</td>
+<td align="left">Click the &quot;Trash&quot; (Delete) button next to a course or book.</td>
+<td align="left">A confirmation prompt appears. If confirmed, the item is permanently deleted from the system.</td>
+<td align="left"></td>
+</tr>
+</tbody></table>
+
+</body>
+</html>

@@ -4,7 +4,7 @@ const bcrypt = require('bcrypt');
 const db = require('../database');
 
 router.get('/login', (req, res) => {
-    res.render('pages/login');
+    res.render('pages/login', { redirect: req.query.redirect });
 });
 
 router.post('/login', (req, res) => {
@@ -20,9 +20,13 @@ router.post('/login', (req, res) => {
         bcrypt.compare(password, user.password, (err, isMatch) => {
             if (isMatch) {
                 req.session.user = user;
-                res.redirect('/');
+                if (req.query.redirect) {
+                    res.redirect(req.query.redirect);
+                } else {
+                    res.redirect('/');
+                }
             } else {
-                res.render('pages/login', { error: 'Invalid email or password' });
+                res.render('pages/login', { error: 'Invalid email or password', redirect: req.query.redirect });
             }
         });
     });

@@ -114,7 +114,7 @@
                 <button class="btn-buy" id="addCartBtn" onclick="addToCart()">
                     <i class="fa-solid fa-cart-plus"></i> Add to Cart
                 </button>
-                <button class="btn-buy" style="background: #f0ebe5; color: #333;" onclick="toggleWish(this)">
+                <button class="btn-buy" id="wishBtn" style="background: #f0ebe5; color: #333;" onclick="toggleWishlist()">
                     <i class="fa-regular fa-heart" id="wishIcon"></i> Wishlist
                 </button>
             </div>
@@ -125,33 +125,58 @@
 <div id="toastMsg">🛒 Added to cart!</div>
 
 <script>
-const BOOK_ID    = '<%= book.id %>';
-const BOOK_NAME  = '<%= book.title.replace(/'/g,"") %>';
-const BOOK_PRICE = <%= book.price %>;
-const BOOK_URL   = '<%= book.book_url %>';
+const bookId    = '<%= book.id %>';
+const bookName  = '<%= book.title.replace(/'/g,"") %>';
+const bookPrice = <%= book.price %>;
+const bookUrl   = '<%= book.book_url %>';
+const bookCover = '<%= book.image_url %>';
+const bookAuthor = '<%= book.author %>';
 
 function addToCart() {
-    const btn  = document.getElementById('addCartBtn');
-    let cart   = JSON.parse(localStorage.getItem('eduCart') || '[]');
-    const idx  = cart.findIndex(i => i.id === BOOK_ID);
-    if (idx > -1) { cart[idx].qty = (cart[idx].qty || 1) + 1; }
-    else { cart.push({ id: BOOK_ID, name: BOOK_NAME, price: BOOK_PRICE, qty: 1, url: BOOK_URL }); }
-    localStorage.setItem('eduCart', JSON.stringify(cart));
-    btn.innerHTML = '<i class="fa-solid fa-check"></i> Added!';
+    if (!requireLoginAuth()) return;
+    let cart = _cart();
+    const existing = cart.find(i => i.id === bookId);
+    if (existing) {
+        existing.qty = (existing.qty || 1) + 1;
+    } else {
+        cart.push({ id: bookId, name: bookName, price: bookPrice, qty: 1, url: bookUrl });
+    }
+    _saveCart(cart);
+    refreshBadges();
+    
+    const btn = document.getElementById('addCartBtn');
+    btn.innerHTML = '<i class="fa-solid fa-check"></i> Added to Cart';
     btn.style.background = '#4CAF50';
-    const t = document.getElementById('toastMsg');
-    t.textContent = '🛒 "' + BOOK_NAME + '" added to cart!';
-    t.classList.add('show');
-    setTimeout(() => { t.classList.remove('show'); btn.innerHTML = '<i class="fa-solid fa-cart-plus"></i> Add to Cart'; btn.style.background = ''; }, 2500);
+    setTimeout(() => {
+        btn.innerHTML = '<i class="fa-solid fa-cart-plus"></i> Add to Cart';
+        btn.style.background = '';
+    }, 2000);
 }
 
-function toggleWish(btn) {
-    const icon = document.getElementById('wishIcon');
-    const wishlisted = icon.classList.contains('fa-solid');
-    icon.className = wishlisted ? 'fa-regular fa-heart' : 'fa-solid fa-heart';
-    icon.style.color = wishlisted ? '' : 'red';
-    btn.style.background = wishlisted ? '#f0ebe5' : '#ffe0e0';
+function toggleWishlist() {
+    if (!requireLoginAuth()) return;
+    let wl = _wl();
+    const idx = wl.findIndex(i => i.id === bookId);
+    if (idx > -1) {
+        wl.splice(idx, 1);
+        document.getElementById('wishBtn').classList.remove('wishlisted');
+        document.getElementById('wishIcon').className = 'fa-regular fa-heart';
+    } else {
+        wl.push({ id: bookId, name: bookName, price: bookPrice, img: bookCover, author: bookAuthor, url: bookUrl });
+        document.getElementById('wishBtn').classList.add('wishlisted');
+        document.getElementById('wishIcon').className = 'fa-solid fa-heart';
+    }
+    _saveWL(wl);
+    refreshBadges();
 }
+
+document.addEventListener('DOMContentLoaded', () => {
+    let wl = _wl();
+    if (wl.find(i => i.id === bookId)) {
+        document.getElementById('wishBtn').classList.add('wishlisted');
+        document.getElementById('wishIcon').className = 'fa-solid fa-heart';
+    }
+});
 </script>
 
 <%- include('../partials/footer.html') %>

@@ -223,7 +223,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
-function getCart() { return JSON.parse(localStorage.getItem('eduCart') || '[]'); }
+function getCart() { return _cart(); }
 
 function renderCheckout() {
     const cart = getCart();
@@ -266,14 +266,14 @@ function renderCheckout() {
 function changeQty(idx, delta) {
     let cart = getCart();
     cart[idx].qty = Math.max(1, (cart[idx].qty||1) + delta);
-    localStorage.setItem('eduCart', JSON.stringify(cart));
+    _saveCart(cart);
     refreshBadges();
     renderCheckout();
 }
 function removeItem(idx) {
     let cart = getCart();
     cart.splice(idx, 1);
-    localStorage.setItem('eduCart', JSON.stringify(cart));
+    _saveCart(cart);
     refreshBadges();
     renderCheckout();
 }
@@ -342,7 +342,7 @@ function placeOrder() {
     // Simulate payment processing (1.5s)
     setTimeout(() => {
         // Clear cart
-        localStorage.removeItem('eduCart');
+        _saveCart([]);
         refreshBadges();
         window.location.href = '/bookstore/order-confirmation';
     }, 1500);

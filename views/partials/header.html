@@ -101,6 +101,15 @@
 <script>
 const CURRENT_USER_EMAIL = '<%- (typeof user !== "undefined" && user) ? user.email : "guest" %>';
 
+function requireLoginAuth() {
+    if (CURRENT_USER_EMAIL === 'guest') {
+        const loginUrl = '/auth/login?redirect=' + encodeURIComponent(window.location.pathname + window.location.search);
+        window.location.href = loginUrl;
+        return false;
+    }
+    return true;
+}
+
 // ── Wishlist & Cart shared helpers (available on ALL pages) ──────
 function _wl() { return JSON.parse(localStorage.getItem('eduWishlist_' + CURRENT_USER_EMAIL) || '[]'); }
 function _saveWL(w) { localStorage.setItem('eduWishlist_' + CURRENT_USER_EMAIL, JSON.stringify(w)); }
@@ -175,6 +184,7 @@ function removeFromWishlist(id) {
 }
 
 function moveOneToCart(id) {
+    if (!requireLoginAuth()) return;
     const wl = _wl();
     const item = wl.find(i => i.id === id);
     if (!item) return;
@@ -198,6 +208,7 @@ function moveOneToCart(id) {
 }
 
 function moveAllToCart() {
+    if (!requireLoginAuth()) return;
     const wl = _wl();
     let cart = _cart();
     wl.forEach(item => {
@@ -223,6 +234,7 @@ function moveAllToCart() {
 
 // Global toggle called from book cards
 function toggleWishlistGlobal(btn, id, name, price, img, author, bookUrl) {
+    if (!requireLoginAuth()) return;
     let wl = _wl();
     const idx = wl.findIndex(i => i.id === id);
     const icon = btn.querySelector('i');

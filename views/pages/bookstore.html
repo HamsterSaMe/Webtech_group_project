@@ -367,7 +367,7 @@
             let sortMode = 'default';
 
             // ── Cart stored in localStorage ────────────────────────────
-            let cart = JSON.parse(localStorage.getItem('eduCart') || '[]');
+            let cart = _cart();
             updateCartBadge();
 
             // ── Filter + sort → visible cards ─────────────────────────
@@ -455,15 +455,16 @@
 
         // ── Cart logic ────────────────────────────────────────────────
         function addToCart(btn, bookId, bookName, price, bookUrl) {
-            let cart = JSON.parse(localStorage.getItem('eduCart') || '[]');
+            if (!requireLoginAuth()) return;
+            let cart = _cart();
             const existing = cart.find(i => i.id === bookId);
             if (existing) {
                 existing.qty = (existing.qty || 1) + 1;
             } else {
                 cart.push({ id: bookId, name: bookName, price: parseFloat(price), qty: 1, url: bookUrl });
             }
-            localStorage.setItem('eduCart', JSON.stringify(cart));
-            updateCartBadge();
+            _saveCart(cart);
+            refreshBadges();
             showToast(`"${bookName}" added to cart!`);
             btn.innerHTML = '<i class="fa-solid fa-check"></i> In Cart';
             btn.style.background = '#4CAF50';
@@ -474,8 +475,6 @@
         }
 
         function updateCartBadge() {
-            const cart = JSON.parse(localStorage.getItem('eduCart') || '[]');
-            const total = cart.reduce((s, i) => s + (i.qty || 1), 0);
             refreshBadges(); // use global
         }
 
