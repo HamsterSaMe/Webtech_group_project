@@ -117,6 +117,13 @@ function _cart() { return JSON.parse(localStorage.getItem('eduCart_' + CURRENT_U
 function _saveCart(c) { localStorage.setItem('eduCart_' + CURRENT_USER_EMAIL, JSON.stringify(c)); }
 
 function refreshBadges() {
+    if (CURRENT_USER_EMAIL === 'guest') {
+        const wb = document.getElementById('wishBadge');
+        if (wb) wb.style.display = 'none';
+        const cb = document.getElementById('cartBadge');
+        if (cb) cb.style.display = 'none';
+        return;
+    }
     // Wishlist badge
     const wl = _wl();
     const wb = document.getElementById('wishBadge');

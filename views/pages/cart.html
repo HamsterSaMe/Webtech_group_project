@@ -111,8 +111,8 @@ document.addEventListener('DOMContentLoaded', () => {
     renderCart();
 });
 
-function getCart() { return JSON.parse(localStorage.getItem('eduCart') || '[]'); }
-function saveCart(c) { localStorage.setItem('eduCart', JSON.stringify(c)); refreshBadges(); }
+function getCart() { return _cart(); }
+function saveCart(c) { _saveCart(c); refreshBadges(); }
 
 function renderCart() {
     const cart = getCart();
