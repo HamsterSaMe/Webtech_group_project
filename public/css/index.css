@@ -100,11 +100,7 @@
     margin-bottom: 40px;
 }
 
-.grid-3 {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 30px;
-}
+
 
 .course-card img, .book-card img {
     width: 100%;
