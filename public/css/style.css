@@ -181,20 +181,17 @@ footer {
     .grid-3 { grid-template-columns: 1fr; }
 }
 
-
-
-
 /* Universal Responsive Fixes */
 @media (max-width: 768px) {
     /* Layout Wrappers */
-    .course-detail-header, .book-detail-wrap, .main-layout, .checkout-layout, .container[style*="display: flex; gap: 30px;"] {
+    .course-detail-header, .book-detail-wrap, .main-layout, .checkout-layout, .cart-layout, .featured-course, .container[style*="display: flex; gap: 30px;"] {
         flex-direction: column !important;
         display: flex !important;
         align-items: center;
     }
     
     /* Course & Book Detail Images */
-    .course-detail-header img, .book-cover img {
+    .course-detail-header img, .book-cover img, .featured-course img {
         width: 100% !important;
         max-width: 250px;
         margin: 0 auto 20px auto;
@@ -202,7 +199,7 @@ footer {
     }
     
     /* Containers */
-    .book-info, .checkout-summary, .course-info, .course-detail-header > div {
+    .book-info, .checkout-summary, .course-info, .course-detail-header > div, .featured-course > div {
         padding: 10px 0 !important;
         text-align: center;
         width: 100%;
