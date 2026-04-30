@@ -139,3 +139,23 @@
     display: inline-block;
     margin-bottom: 10px;
 }
+
+/* Responsive Design for Home Page */
+@media (max-width: 992px) {
+    .about-section { flex-direction: column; text-align: center; }
+    .about-images { margin-bottom: 40px; }
+    .pillars-section { flex-wrap: wrap; }
+}
+
+@media (max-width: 768px) {
+    .hero h1 { font-size: 32px; }
+    .hero p { font-size: 16px; }
+    .hero { padding: 50px 20px; height: auto; min-height: 400px; text-align: center; align-items: center; }
+    .hero h1 span { margin: 0 auto; }
+    .about-images { flex: 0 0 auto; height: 300px; width: 100%; max-width: 300px; margin: 0 auto 30px; }
+    .about-img-1 { width: 120px; left: 0; }
+    .about-img-2 { width: 140px; left: 60px; top: 40px; }
+    .about-img-3 { width: 160px; left: 120px; top: 80px; }
+    .about-content h2 { justify-content: center; }
+    .pillar { width: 100%; max-width: 300px; }
+}
