@@ -217,10 +217,7 @@
         <h2 id="quizTitle" style="margin-bottom: 10px;">Quiz Knowledge Check (Unlock by Enrolling)</h2>
         <p id="quizLessonLabel" style="color: #888; margin-bottom: 20px;"></p>
 
-        <div class="quiz-question" id="quizQuestionBox">
-            <h4 id="quizQuestionText"></h4>
-            <div id="quizOptionsBox"></div>
-        </div>
+        <div id="quizQuestionsContainer"></div>
 
         <div style="text-align: center;">
             <button id="quizSubmitBtn" class="btn btn-primary"
@@ -236,17 +233,15 @@
 
         // ─── Dynamic quiz data from chapter content ─────────────────
         const CHAPTER_QUIZZES = <%- JSON.stringify(chapters.map(c => c.quizzes || [])) %>;
-        // Build QUIZZES array - use chapter quizzes if available, else fallback
         const QUIZZES = CHAPTER_QUIZZES.map((q, i) => {
-            if (q && q.length > 0) return q[0]; // use first quiz of the chapter
-            // fallback defaults
+            if (q && q.length > 0) return q;
             return [
                 { question: 'What is the primary goal of this course?', options: [
                     { text: 'To memorize textbook definitions.', correct: false },
                     { text: 'To understand and practically apply the key concepts.', correct: true },
                     { text: 'To pass a standard multiple choice test.', correct: false }
-                ]},
-            ][0];
+                ]}
+            ];
         });
         // All quizzes per chapter for rendering
         const ALL_CHAPTER_QUIZZES = CHAPTER_QUIZZES;
@@ -271,8 +266,7 @@
             const quizSection = document.getElementById('quizSection');
             const quizTitle = document.getElementById('quizTitle');
             const quizLessonLabel = document.getElementById('quizLessonLabel');
-            const quizQuestionText = document.getElementById('quizQuestionText');
-            const quizOptionsBox = document.getElementById('quizOptionsBox');
+            const quizQuestionsContainer = document.getElementById('quizQuestionsContainer');
             const quizSubmitBtn = document.getElementById('quizSubmitBtn');
             const quizFeedback = document.getElementById('quizFeedback');
             const progressBar = document.getElementById('progressBar');
@@ -291,48 +285,56 @@
 
             function renderQuiz(lessonIndex) {
                 if (CHAPTERS_COUNT === 0) return;
-                let quiz = QUIZZES[lessonIndex];
-                if (!quiz) {
-                    quiz = {
-                        question: 'What is the main topic of ' + (CHAPTER_NAMES[lessonIndex] || 'this lesson') + '?',
-                        options: [
-                            { text: 'Correct understanding of the concepts.', correct: true },
-                            { text: 'Incorrect understanding.', correct: false }
-                        ]
-                    };
-                }
-
+                let quizzes = QUIZZES[lessonIndex] || [];
+                
                 quizLessonLabel.textContent = '📖 Current Lesson: ' + (CHAPTER_NAMES[lessonIndex] || 'Lesson ' + (lessonIndex + 1));
-                quizQuestionText.textContent = quiz.question;
-                quizOptionsBox.innerHTML = '';
-                selectedOption = null;
+                quizQuestionsContainer.innerHTML = '';
                 quizFeedback.textContent = '';
-
+                
                 const isDone = state.completedQuizzes.includes(lessonIndex);
 
-                quiz.options.forEach((opt, i) => {
-                    const div = document.createElement('div');
-                    div.className = 'quiz-option';
-                    div.textContent = opt.text;
-                    div.dataset.correct = opt.correct;
-                    if (isDone) {
-                        div.style.pointerEvents = 'none';
-                        if (opt.correct) {
-                            div.style.background = '#d4edda';
-                            div.style.border = '2px solid #4CAF50';
-                        }
-                    } else {
-                        div.addEventListener('click', () => {
-                            document.querySelectorAll('.quiz-option').forEach(o => {
-                                o.style.background = '#F5EFEB';
-                                o.style.border = 'none';
+                quizzes.forEach((quiz, qIdx) => {
+                    const qBox = document.createElement('div');
+                    qBox.className = 'quiz-question';
+                    qBox.style.marginBottom = '20px';
+                    
+                    const qText = document.createElement('h4');
+                    qText.textContent = (qIdx + 1) + '. ' + quiz.question;
+                    qBox.appendChild(qText);
+                    
+                    const optionsBox = document.createElement('div');
+                    optionsBox.className = 'quiz-options-box';
+                    optionsBox.dataset.qidx = qIdx;
+                    
+                    quiz.options.forEach((opt, oIdx) => {
+                        const div = document.createElement('div');
+                        div.className = 'quiz-option';
+                        div.textContent = opt.text;
+                        div.dataset.correct = opt.correct;
+                        
+                        if (isDone) {
+                            div.style.pointerEvents = 'none';
+                            if (opt.correct) {
+                                div.style.background = '#d4edda';
+                                div.style.border = '2px solid #4CAF50';
+                            }
+                        } else {
+                            div.addEventListener('click', () => {
+                                optionsBox.querySelectorAll('.quiz-option').forEach(o => {
+                                    o.style.background = '#F5EFEB';
+                                    o.style.border = 'none';
+                                    o.dataset.selected = 'false';
+                                });
+                                div.style.background = '#FFF3E0';
+                                div.style.border = '2px solid #FFAD42';
+                                div.dataset.selected = 'true';
                             });
-                            div.style.background = '#FFF3E0';
-                            div.style.border = '2px solid #FFAD42';
-                            selectedOption = div;
-                        });
-                    }
-                    quizOptionsBox.appendChild(div);
+                        }
+                        optionsBox.appendChild(div);
+                    });
+                    
+                    qBox.appendChild(optionsBox);
+                    quizQuestionsContainer.appendChild(qBox);
                 });
 
                 // Submit button state
@@ -430,8 +432,7 @@
                 progressBar.style.width = '0%';
                 progressText.textContent = '0 of 4 lessons completed';
                 quizLessonLabel.textContent = '';
-                quizQuestionText.textContent = '';
-                quizOptionsBox.innerHTML = '';
+                quizQuestionsContainer.innerHTML = '';
                 quizFeedback.textContent = '';
                 quizSubmitBtn.textContent = 'Submit Answer';
                 quizSubmitBtn.classList.remove('completed');
@@ -510,21 +511,33 @@
             quizSubmitBtn.addEventListener('click', () => {
                 if (state.completedQuizzes.includes(activeLesson)) return;
 
-                if (!selectedOption) {
-                    quizFeedback.textContent = 'Please select an answer!';
+                const optionsBoxes = quizQuestionsContainer.querySelectorAll('.quiz-options-box');
+                let allCorrect = true;
+                let allAnswered = true;
+
+                optionsBoxes.forEach(box => {
+                    const selected = box.querySelector('.quiz-option[data-selected="true"]');
+                    if (!selected) {
+                        allAnswered = false;
+                    } else if (selected.dataset.correct !== 'true') {
+                        allCorrect = false;
+                    }
+                });
+
+                if (!allAnswered) {
+                    quizFeedback.textContent = 'Please answer all questions!';
                     quizFeedback.style.color = 'red';
                     return;
                 }
 
-                const isCorrect = selectedOption.dataset.correct === 'true';
-                if (isCorrect) {
+                if (allCorrect) {
                     // Mark complete
                     if (!state.completedQuizzes.includes(activeLesson)) {
                         state.completedQuizzes.push(activeLesson);
                     }
                     saveState(state);
 
-                    quizFeedback.textContent = '✔ Correct! +50 XP earned!';
+                    quizFeedback.textContent = '✔ All correct! +50 XP earned!';
                     quizFeedback.style.color = '#4CAF50';
 
                     // Update syllabus icon
@@ -534,7 +547,7 @@
                     updateProgress();
                     renderQuiz(activeLesson); // re-render to show completed state
                 } else {
-                    quizFeedback.textContent = '✘ Incorrect. Please try again!';
+                    quizFeedback.textContent = '✘ Some answers are incorrect. Please review and try again!';
                     quizFeedback.style.color = 'red';
                 }
             });

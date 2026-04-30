@@ -20,7 +20,7 @@ const upload = multer({ storage });
 router.get('/', (req, res) => {
     db.all("SELECT * FROM courses", [], (err, courses) => {
         const featuredCourse = courses && courses.length > 0 
-            ? courses.reduce((prev, current) => (prev.rating > current.rating) ? prev : current) 
+            ? courses.filter(c => c.title !== 'Introduction to Machine Learning').reduce((prev, current) => (prev.rating > current.rating) ? prev : current) 
             : null;
         res.render('pages/courses', { courses: courses || [], featuredCourse });
     });
