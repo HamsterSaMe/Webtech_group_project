@@ -449,6 +449,7 @@
 
             // ─── Enroll ────────────────────────────────────────────────
             enrollBtn.addEventListener('click', () => {
+                if (!requireLoginAuth()) return;
                 state.isEnrolled = true;
                 state.completedQuizzes = [];
                 state.activeLesson = 0;
