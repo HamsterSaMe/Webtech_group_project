@@ -306,13 +306,7 @@
             <h4>3. Create Quiz</h4>
             <div id="quizQuestionsContainer">
                 <div class="quiz-card" data-qtype="mcq">
-                    <div class="q-row">
-                        <label>Type:</label>
-                        <div class="type-toggle">
-                            <span class="active" onclick="toggleType(this)">MCQ</span>
-                            <span onclick="toggleType(this)">Subjective</span>
-                        </div>
-                    </div>
+                    <!-- Removed Type toggle -->
                     <div class="q-row">
                         <label>Question:</label>
                         <input type="text" class="q-input q-question" placeholder="Enter your question here">
@@ -489,13 +483,7 @@
             if (correctIdx >= 0) answerVal = ['A','B','C','D'][correctIdx];
         }
         qCard.innerHTML = `
-            <div class="q-row">
-                <label>Type:</label>
-                <div class="type-toggle">
-                    <span class="active" onclick="toggleType(this)">MCQ</span>
-                    <span onclick="toggleType(this)">Subjective</span>
-                </div>
-            </div>
+            <!-- Removed Type toggle -->
             <div class="q-row">
                 <label>Question:</label>
                 <input type="text" class="q-input q-question" value="${q}" placeholder="Enter your question here">
