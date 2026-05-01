@@ -61,8 +61,14 @@
         font-size:12px; line-height:1.6;
     }
     #emptyMsg {
-        text-align:center; padding:60px;
-        color:#aaa; display:none;
+        display: none;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 60px 20px;
+        color: #aaa;
+        width: 100%;
     }
     #emptyMsg i { font-size:50px; display:block; margin-bottom:16px; }
 
@@ -145,7 +151,7 @@ function renderCart() {
 
     if (cart.length === 0) {
         container.innerHTML = '';
-        emptyMsg.style.display = 'block';
+        emptyMsg.style.display = 'flex';
         checkoutBtn.disabled = true;
         checkoutBtn.style.opacity = '0.5';
         document.getElementById('sumSubtotal').textContent = 'RM 0.00';
