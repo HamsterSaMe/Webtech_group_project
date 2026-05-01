@@ -65,6 +65,29 @@
         color:#aaa; display:none;
     }
     #emptyMsg i { font-size:50px; display:block; margin-bottom:16px; }
+
+    /* ── Mobile Responsive ───────────── */
+    @media (max-width: 768px) {
+        .checkout-hero {
+            flex-direction: column;
+            text-align: center;
+            padding: 20px 16px;
+            gap: 12px;
+        }
+        .cart-layout {
+            flex-direction: column !important;
+        }
+        .cart-summary {
+            position: static;
+            width: 100%;
+        }
+        .cart-item {
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .cart-item img { width: 56px; height: 70px; }
+        .qty-ctrl { margin-top: 8px; }
+    }
 </style>
 
 <div class="container">

@@ -161,6 +161,62 @@
         font-size: 14px; opacity: 0; pointer-events: none; transition: 0.3s; z-index: 9999;
     }
     #alertToast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    /* ── Mobile Responsive ─────────────────── */
+    @media (max-width: 768px) {
+        .profile-header {
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            padding: 24px 16px;
+            gap: 16px;
+        }
+        .profile-header h1 { font-size: 26px !important; }
+        .profile-header p { font-size: 14px !important; }
+        .profile-header button { margin-left: 0 !important; width: 100%; }
+
+        .profile-nav {
+            flex-wrap: wrap;
+            gap: 8px;
+            padding: 10px 8px;
+            justify-content: center;
+        }
+        .profile-nav a {
+            font-size: 13px;
+            padding: 8px 14px;
+        }
+
+        .stats-row {
+            gap: 12px;
+        }
+        .stat-box { width: calc(50% - 6px); }
+
+        .course-progress-card {
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+        .course-progress-card img {
+            width: 100%;
+            max-width: 300px;
+            height: auto;
+        }
+
+        .vault-card {
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+        .vault-card img { width: 100px; height: auto; }
+
+        .fav-grid { grid-template-columns: repeat(2, 1fr); }
+
+        .history-card { padding: 16px; }
+    }
+    @media (max-width: 420px) {
+        .fav-grid { grid-template-columns: 1fr; }
+        .stat-box { width: 100%; }
+    }
 </style>
 
 <div class="profile-header">

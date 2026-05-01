@@ -36,6 +36,45 @@
         border-radius: 12px;
     }
     .course-info { flex: 1; padding-top: 5px; }
+
+    /* ── Mobile Responsive ───────────── */
+    @media (max-width: 768px) {
+        .manage-container { margin: 12px 12px 60px; }
+
+        .course-card {
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+        .course-card img {
+            width: 100%;
+            max-width: 340px;
+            height: auto;
+        }
+        .course-info { width: 100%; padding-top: 0; }
+
+        .upload-boxes {
+            flex-direction: column;
+        }
+
+        .chp-row {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 10px;
+        }
+        .chp-actions {
+            width: 100%;
+            justify-content: flex-end;
+        }
+
+        .q-row {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 6px;
+        }
+        .q-row label { width: auto; }
+        .q-input { width: 100%; }
+    }
     
     .chp-box {
         background: white;
