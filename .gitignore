@@ -1,0 +1,11 @@
+node_modules/
+*.pdf
+*.doc
+*.docx
+extract_images.py
+generate_all_images.js
+generate_test.js
+test_locals.js
+server.log
+.env
+.DS_Store

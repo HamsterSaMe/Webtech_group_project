@@ -1,0 +1,416 @@
+<%- include('../partials/header.html') %>
+<style>
+.forum-hero{background:linear-gradient(rgba(0,0,0,.45),rgba(0,0,0,.45)),url('/images/extracted/page11_img2.jpeg')center/cover;height:200px;display:flex;align-items:center;justify-content:center;flex-direction:column;color:#fff;text-align:center}
+.forum-hero h1{font-size:38px;font-weight:800;margin:0}
+.forum-hero p{font-size:14px;margin:6px 0 0;opacity:.85}
+.forum-wrap{max-width:980px;margin:0 auto;padding:28px 20px 60px}
+.forum-toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:18px}
+.f-search{flex:1;min-width:180px;display:flex;align-items:center;background:#fff;border:2px solid #e0d5c5;border-radius:10px;padding:0 14px}
+.f-search i{color:#aaa;margin-right:8px}
+.f-search input{border:none;outline:none;width:100%;padding:11px 0;font-size:14px}
+.btn-new{background:#C64A25;color:#fff;border:none;padding:11px 20px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;white-space:nowrap}
+.btn-new:hover{background:#a33c1e}
+.cat-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}
+.cat-tab{padding:6px 16px;border-radius:20px;border:2px solid #e0d5c5;background:#fff;font-size:13px;font-weight:600;cursor:pointer;color:#555;transition:.15s}
+.cat-tab.active,.cat-tab:hover{background:#C64A25;color:#fff;border-color:#C64A25}
+.thread-card{background:#fff;border-radius:12px;padding:18px 22px;margin-bottom:14px;box-shadow:0 2px 10px rgba(0,0,0,.07);cursor:pointer;transition:.15s;border:2px solid transparent}
+.thread-card:hover{border-color:#C64A25;transform:translateY(-2px)}
+.tc-top{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.tc-av{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#C64A25,#e8895a);display:flex;align-items:center;justify-content:center;color:#fff;font-size:16px;font-weight:700;flex-shrink:0}
+.tc-meta h4{margin:0;font-size:14px;color:#222}
+.tc-meta span{font-size:12px;color:#888}
+.cat-badge{background:#FDF0E8;color:#C64A25;border:1px solid #f0c8a8;border-radius:20px;padding:2px 10px;font-size:11px;font-weight:600;margin-left:6px}
+.tc-title{font-size:16px;font-weight:700;color:#222;margin:0 0 5px}
+.tc-preview{font-size:13px;color:#666;margin:0;line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.tc-stats{display:flex;gap:16px;margin-top:12px;padding-top:10px;border-top:1px solid #f0ece6;font-size:13px;color:#888}
+.tc-stats span{display:flex;align-items:center;gap:5px;cursor:pointer}
+.like-span:hover{color:#C64A25}
+.no-threads{text-align:center;padding:50px;color:#999}
+/* pagination */
+.pagination{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:24px}
+.pg-btn{width:36px;height:36px;border-radius:50%;border:2px solid #e0d5c5;background:#fff;cursor:pointer;font-size:14px;font-weight:600;color:#555;display:flex;align-items:center;justify-content:center;transition:.15s}
+.pg-btn:hover,.pg-btn.active{background:#C64A25;color:#fff;border-color:#C64A25}
+.pg-btn:disabled{opacity:.4;cursor:not-allowed}
+.pg-arrow{font-size:16px}
+/* modals */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9000;align-items:center;justify-content:center}
+.modal-bg.show{display:flex}
+.modal-box{background:#fff;border-radius:16px;padding:28px;width:94%;max-width:500px;box-shadow:0 20px 50px rgba(0,0,0,.2)}
+.modal-box h2{margin:0 0 20px;font-size:20px}
+.fg{margin-bottom:14px}
+.fg label{font-size:12px;font-weight:600;color:#555;display:block;margin-bottom:5px}
+.fg input,.fg select,.fg textarea{width:100%;padding:10px 13px;border:2px solid #e0d5c5;border-radius:9px;font-size:14px;outline:none;box-sizing:border-box;font-family:inherit;transition:.15s}
+.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:#C64A25}
+.fg textarea{resize:vertical;min-height:80px}
+.modal-btns{display:flex;gap:10px;justify-content:flex-end;margin-top:16px}
+.btn-cancel{background:#f0ece6;color:#555;border:none;padding:10px 20px;border-radius:9px;font-size:14px;font-weight:600;cursor:pointer}
+.btn-ok{background:#C64A25;color:#fff;border:none;padding:10px 22px;border-radius:9px;font-size:14px;font-weight:700;cursor:pointer}
+/* chat */
+.chat-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9100;align-items:flex-end;justify-content:flex-end;padding:20px}
+.chat-bg.show{display:flex}
+.chat-box{background:#fff;border-radius:16px;width:390px;max-width:95vw;height:540px;max-height:85vh;display:flex;flex-direction:column;box-shadow:0 16px 50px rgba(0,0,0,.25);overflow:hidden}
+.chat-head{background:linear-gradient(135deg,#C64A25,#e8895a);color:#fff;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.chat-head h3{margin:0;font-size:14px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:280px}
+.chat-head p{margin:2px 0 0;font-size:11px;opacity:.85}
+.chat-close{background:rgba(255,255,255,.2);border:none;color:#fff;width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.chat-msgs{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px}
+.chat-msg{display:flex;gap:9px}
+.chat-msg.mine{flex-direction:row-reverse}
+.m-av{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#C64A25,#e8895a);display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;font-weight:700;flex-shrink:0}
+.chat-msg.mine .m-av{background:linear-gradient(135deg,#444,#888)}
+.m-body{max-width:75%}
+.m-name{font-size:10px;color:#888;margin-bottom:2px}
+.chat-msg.mine .m-name{text-align:right}
+.m-text{background:#f5f0ea;padding:9px 13px;border-radius:0 12px 12px 12px;font-size:13px;line-height:1.5;color:#333;position:relative;word-break:break-word}
+.chat-msg.mine .m-text{background:#FDF0E8;border-radius:12px 0 12px 12px;border:1px solid #f0c8a8}
+.m-time{font-size:10px;color:#bbb;margin-top:2px}
+.chat-msg.mine .m-time{text-align:right}
+.del-btn{display:none;position:absolute;top:-5px;right:-5px;width:16px;height:16px;border-radius:50%;background:#e55;color:#fff;border:none;cursor:pointer;font-size:9px;align-items:center;justify-content:center}
+.m-text:hover .del-btn{display:flex}
+.chat-name{padding:8px 14px;background:#fdf8f4;border-top:1px solid #f0ece6;display:flex;align-items:center;gap:8px;flex-shrink:0}
+.chat-name label{font-size:11px;color:#888;white-space:nowrap}
+.chat-name input{flex:1;padding:6px 9px;border:1px solid #ddd;border-radius:7px;font-size:13px;outline:none}
+.chat-input{padding:10px 14px;border-top:1px solid #f0ece6;display:flex;gap:8px;align-items:flex-end;flex-shrink:0}
+.chat-input textarea{flex:1;padding:9px 13px;border:2px solid #e0d5c5;border-radius:11px;font-size:14px;outline:none;resize:none;font-family:inherit;max-height:90px;transition:.15s}
+.chat-input textarea:focus{border-color:#C64A25}
+.send-btn{background:#C64A25;color:#fff;border:none;width:40px;height:40px;border-radius:11px;cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.send-btn:hover{background:#a33c1e}
+</style>
+
+<div class="forum-hero">
+    <h1><i class="fa-solid fa-comments" style="margin-right:8px"></i>Community Forum</h1>
+    <p>Ask questions, share knowledge and connect with learners</p>
+</div>
+
+<div class="forum-wrap">
+    <div class="forum-toolbar">
+        <div class="f-search"><i class="fa-solid fa-magnifying-glass"></i><input type="text" id="searchBox" placeholder="Search threads..."></div>
+        <button class="btn-new" id="openNewBtn"><i class="fa-solid fa-plus"></i> New Thread</button>
+    </div>
+    <div class="cat-tabs" id="catTabs">
+        <button class="cat-tab active" data-cat="all">🔥 All</button>
+        <button class="cat-tab" data-cat="General">💬 General</button>
+        <button class="cat-tab" data-cat="Programming">💻 Programming</button>
+        <button class="cat-tab" data-cat="Design">🎨 Design</button>
+        <button class="cat-tab" data-cat="Math">📐 Math</button>
+        <button class="cat-tab" data-cat="Science">🔬 Science</button>
+        <button class="cat-tab" data-cat="Career">🚀 Career</button>
+    </div>
+    <div id="threadList"></div>
+    <div class="pagination" id="pgBar"></div>
+</div>
+
+<!-- New Thread Modal -->
+<div class="modal-bg" id="newModal">
+    <div class="modal-box">
+        <h2><i class="fa-solid fa-pen-to-square" style="color:#C64A25;margin-right:8px"></i>Start a Discussion</h2>
+        <div class="fg"><label>Your Name</label><input id="nt_name" placeholder="Anonymous" maxlength="40"></div>
+        <div class="fg"><label>Title *</label><input id="nt_title" placeholder="What's your question?"></div>
+        <div class="fg"><label>Category *</label>
+            <select id="nt_cat">
+                <option value="General">💬 General</option>
+                <option value="Programming">💻 Programming</option>
+                <option value="Design">🎨 Design</option>
+                <option value="Math">📐 Math</option>
+                <option value="Science">🔬 Science</option>
+                <option value="Career">🚀 Career</option>
+            </select>
+        </div>
+        <div class="fg"><label>Description</label><textarea id="nt_content" placeholder="Add more details..."></textarea></div>
+        <div class="modal-btns">
+            <button class="btn-cancel" id="cancelNewBtn">Cancel</button>
+            <button class="btn-ok" id="submitThreadBtn"><i class="fa-solid fa-paper-plane" style="margin-right:5px"></i>Post Thread</button>
+        </div>
+    </div>
+</div>
+
+<!-- Chat Modal -->
+<div class="chat-bg" id="chatBg">
+    <div class="chat-box">
+        <div class="chat-head">
+            <div><h3 id="chatTitle">Discussion</h3><p id="chatSub">Live Chat</p></div>
+            <button class="chat-close" id="chatCloseBtn"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="chat-msgs" id="chatMsgs"></div>
+        <div class="chat-name">
+            <label><i class="fa-solid fa-user"></i> Name:</label>
+            <input type="text" id="chatName" placeholder="Your name" maxlength="30">
+        </div>
+        <div class="chat-input">
+            <textarea id="chatInput" placeholder="Type a message… (Enter to send)" rows="1"></textarea>
+            <button class="send-btn" id="sendBtn"><i class="fa-solid fa-paper-plane"></i></button>
+        </div>
+    </div>
+</div>
+
+<script>
+const THREADS_PER_PAGE = 5;
+let allThreads = <%- JSON.stringify(threads) %>;
+let activeCat   = 'all';
+let searchQ     = '';
+let curPage     = 1;
+let activeThread = null;
+let pollTimer   = null;
+let lastMsgId   = 0;
+const NAME_KEY  = 'forumName';
+
+// ── helpers ──────────────────────────────────────────────────────────
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function ago(d){
+    if(!d) return 'just now';
+    const s=Math.floor((Date.now()-new Date(d).getTime())/1000);
+    if(s<60) return 'just now';
+    if(s<3600) return Math.floor(s/60)+'m ago';
+    if(s<86400) return Math.floor(s/3600)+'h ago';
+    return Math.floor(s/86400)+'d ago';
+}
+function myName(){ return (document.getElementById('chatName').value.trim()||'Anonymous'); }
+
+// ── Init ──────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', ()=>{
+    const saved = localStorage.getItem(NAME_KEY)||'';
+    document.getElementById('chatName').value = saved;
+    document.getElementById('nt_name').value  = saved;
+
+    renderList();
+    refreshFromServer();
+
+    document.getElementById('searchBox').addEventListener('input', e=>{ searchQ=e.target.value.toLowerCase(); curPage=1; renderList(); });
+    document.getElementById('catTabs').addEventListener('click', e=>{
+        const btn=e.target.closest('.cat-tab'); if(!btn) return;
+        document.querySelectorAll('.cat-tab').forEach(b=>b.classList.remove('active'));
+        btn.classList.add('active'); activeCat=btn.dataset.cat; curPage=1; renderList();
+    });
+    document.getElementById('openNewBtn').addEventListener('click',  ()=>document.getElementById('newModal').classList.add('show'));
+    document.getElementById('cancelNewBtn').addEventListener('click', ()=>document.getElementById('newModal').classList.remove('show'));
+    document.getElementById('newModal').addEventListener('click', e=>{ if(e.target===document.getElementById('newModal')) document.getElementById('newModal').classList.remove('show'); });
+    document.getElementById('submitThreadBtn').addEventListener('click', submitThread);
+    document.getElementById('chatCloseBtn').addEventListener('click', closeChat);
+    document.getElementById('sendBtn').addEventListener('click', sendMessage);
+    document.getElementById('chatInput').addEventListener('keydown', e=>{ if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); sendMessage(); } });
+    document.getElementById('chatName').addEventListener('change', e=>{ localStorage.setItem(NAME_KEY, e.target.value); });
+    document.getElementById('chatBg').addEventListener('click', e=>{ if(e.target===document.getElementById('chatBg')) closeChat(); });
+});
+
+// ── Refresh from server (background) ─────────────────────────────────
+async function refreshFromServer(){
+    try{
+        const r = await fetch('/forum/api/threads');
+        if(!r.ok) return;
+        const data = await r.json();
+        allThreads = data;
+        renderList();
+    } catch(e){}
+}
+
+// ── Render thread list ────────────────────────────────────────────────
+function filtered(){
+    let list = allThreads;
+    if(activeCat!=='all') list = list.filter(t=>t.category===activeCat);
+    if(searchQ) list = list.filter(t=>(t.title+' '+(t.content||'')+' '+(t.author_name||'')).toLowerCase().includes(searchQ));
+    return list;
+}
+
+function renderList(){
+    const list = filtered();
+    const totalPages = Math.max(1, Math.ceil(list.length/THREADS_PER_PAGE));
+    if(curPage>totalPages) curPage=totalPages;
+    const page = list.slice((curPage-1)*THREADS_PER_PAGE, curPage*THREADS_PER_PAGE);
+
+    const el = document.getElementById('threadList');
+    if(!list.length){
+        el.innerHTML='<div class="no-threads"><i class="fa-regular fa-folder-open" style="font-size:40px;display:block;margin-bottom:10px"></i>No threads found.</div>';
+        document.getElementById('pgBar').innerHTML='';
+        return;
+    }
+
+    el.innerHTML = page.map(t=>{
+        const init=(t.author_name||'A')[0].toUpperCase();
+        const msgs=t.msg_count||t.replies_count||0;
+        const liked=localStorage.getItem('liked_'+t.id);
+        return `<div class="thread-card" data-id="${t.id}" data-title="${esc(t.title)}" data-cat="${esc(t.category)}">
+            <div class="tc-top">
+                <div class="tc-av">${init}</div>
+                <div class="tc-meta">
+                    <h4>${esc(t.author_name||'Anonymous')}<span class="cat-badge">${esc(t.category)}</span></h4>
+                    <span>${ago(t.created_at)}</span>
+                </div>
+            </div>
+            <p class="tc-title">${esc(t.title)}</p>
+            ${t.content?`<p class="tc-preview">${esc(t.content)}</p>`:''}
+            <div class="tc-stats">
+                <span class="like-span" data-lid="${t.id}">
+                    <i class="${liked?'fa-solid':'fa-regular'} fa-heart" style="color:${liked?'#C64A25':''}"></i>
+                    <span id="lc-${t.id}">${t.likes||0}</span>
+                </span>
+                <span><i class="fa-regular fa-comment"></i> ${msgs}</span>
+                <span><i class="fa-solid fa-eye"></i> ${t.views||0}</span>
+                <span style="margin-left:auto;color:#C64A25;font-weight:600"><i class="fa-solid fa-comment-dots"></i> Open Chat</span>
+            </div>
+        </div>`;
+    }).join('');
+
+    // Thread card click → open chat
+    el.querySelectorAll('.thread-card').forEach(card=>{
+        card.addEventListener('click', e=>{
+            if(e.target.closest('.like-span')) return;
+            openChat(card.dataset.id, card.dataset.title, card.dataset.cat);
+        });
+    });
+
+    // Like button
+    el.querySelectorAll('.like-span').forEach(span=>{
+        span.addEventListener('click', e=>{ e.stopPropagation(); likeThread(span.dataset.lid); });
+    });
+
+    renderPagination(totalPages);
+}
+
+function renderPagination(total){
+    const bar = document.getElementById('pgBar');
+    if(total<=1){ bar.innerHTML=''; return; }
+    let html = `<button class="pg-btn pg-arrow" ${curPage===1?'disabled':''} onclick="goPage(${curPage-1})">&#8592;</button>`;
+    for(let i=1;i<=total;i++){
+        html+=`<button class="pg-btn ${i===curPage?'active':''}" onclick="goPage(${i})">${i}</button>`;
+    }
+    html+=`<button class="pg-btn pg-arrow" ${curPage===total?'disabled':''} onclick="goPage(${curPage+1})">&#8594;</button>`;
+    bar.innerHTML=html;
+}
+
+function goPage(p){ curPage=p; renderList(); window.scrollTo({top:0,behavior:'smooth'}); }
+
+// ── Like / Unlike toggle ──────────────────────────────────────────────────
+async function likeThread(id){
+    const alreadyLiked = localStorage.getItem('liked_'+id);
+    try{
+        if(alreadyLiked){
+            // Unlike
+            const r=await fetch('/forum/unlike/'+id,{method:'POST'});
+            const d=await r.json();
+            const t=allThreads.find(x=>String(x.id)===String(id));
+            if(t) t.likes=d.likes;
+            document.getElementById('lc-'+id).textContent=d.likes;
+            localStorage.removeItem('liked_'+id);
+            const icon=document.querySelector(`[data-lid="${id}"] i`);
+            if(icon){icon.className='fa-regular fa-heart';icon.style.color='';}
+        } else {
+            // Like
+            const r=await fetch('/forum/like/'+id,{method:'POST'});
+            const d=await r.json();
+            const t=allThreads.find(x=>String(x.id)===String(id));
+            if(t) t.likes=d.likes;
+            document.getElementById('lc-'+id).textContent=d.likes;
+            localStorage.setItem('liked_'+id,'1');
+            const icon=document.querySelector(`[data-lid="${id}"] i`);
+            if(icon){icon.className='fa-solid fa-heart';icon.style.color='#C64A25';}
+        }
+    }catch(e){}
+}
+
+// ── New Thread ─────────────────────────────────────────────────────────
+async function submitThread(){
+    const title=document.getElementById('nt_title').value.trim();
+    const cat=document.getElementById('nt_cat').value;
+    const content=document.getElementById('nt_content').value.trim();
+    const author=document.getElementById('nt_name').value.trim()||'Anonymous';
+    if(!title){ alert('Please enter a title.'); return; }
+    localStorage.setItem(NAME_KEY, author);
+    document.getElementById('chatName').value=author;
+    try{
+        const r=await fetch('/forum/thread',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({title,category:cat,content,author_name:author})});
+        if(!r.ok) throw new Error();
+        const newT=await r.json();
+        newT.created_at=new Date().toISOString();
+        allThreads.unshift(newT);
+        curPage=1;
+        document.getElementById('newModal').classList.remove('show');
+        document.getElementById('nt_title').value='';
+        document.getElementById('nt_content').value='';
+        renderList();
+    }catch(e){ alert('Failed to post. Please try again.'); }
+}
+
+// ── Chat ──────────────────────────────────────────────────────────────
+function openChat(id, title, cat){
+    activeThread=id; lastMsgId=0;
+    document.getElementById('chatTitle').textContent=title;
+    document.getElementById('chatSub').textContent=cat+' · Live';
+    document.getElementById('chatMsgs').innerHTML='<div style="text-align:center;padding:30px;color:#aaa;font-size:13px"><i class="fa-regular fa-comment-dots" style="font-size:30px;display:block;margin-bottom:8px"></i>Loading messages...</div>';
+    document.getElementById('chatBg').classList.add('show');
+    document.getElementById('chatInput').focus();
+    clearInterval(pollTimer);
+    poll();
+    pollTimer=setInterval(poll, 2500);
+}
+
+function closeChat(){
+    document.getElementById('chatBg').classList.remove('show');
+    clearInterval(pollTimer);
+    activeThread=null;
+    refreshFromServer();
+}
+
+async function poll(){
+    if(!activeThread) return;
+    try{
+        const r=await fetch('/forum/messages/'+activeThread+'?since='+lastMsgId);
+        if(!r.ok) return;
+        const msgs=await r.json();
+        if(msgs.length){
+            addMsgs(msgs);
+            lastMsgId=msgs[msgs.length-1].id;
+        } else if(lastMsgId===0){
+            document.getElementById('chatMsgs').innerHTML='<div style="text-align:center;padding:30px;color:#aaa;font-size:13px"><i class="fa-regular fa-comment-dots" style="font-size:30px;display:block;margin-bottom:8px"></i>No messages yet. Say hello!</div>';
+        }
+    }catch(e){}
+}
+
+function addMsgs(msgs){
+    const c=document.getElementById('chatMsgs');
+    const placeholder=c.querySelector('[style*="padding:30px"]');
+    if(placeholder) c.innerHTML='';
+    const me=myName();
+    msgs.forEach(m=>{
+        const mine=m.author_name===me;
+        const init=m.author_name[0].toUpperCase();
+        const t=new Date(m.created_at).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+        const div=document.createElement('div');
+        div.className='chat-msg'+(mine?' mine':'');
+        div.id='msg-'+m.id;
+        div.innerHTML=`<div class="m-av">${init}</div>
+            <div class="m-body">
+                <div class="m-name">${esc(m.author_name)}</div>
+                <div class="m-text">${esc(m.content)}${mine?`<button class="del-btn" onclick="delMsg(${m.id})" title="Delete"><i class="fa-solid fa-xmark"></i></button>`:''}</div>
+                <div class="m-time">${t}</div>
+            </div>`;
+        c.appendChild(div);
+    });
+    c.scrollTop=c.scrollHeight;
+}
+
+async function sendMessage(){
+    const inp=document.getElementById('chatInput');
+    const txt=inp.value.trim();
+    if(!txt||!activeThread) return;
+    const name=myName();
+    localStorage.setItem(NAME_KEY,name);
+    inp.value='';
+    try{
+        const r=await fetch('/forum/messages/'+activeThread,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({author_name:name,content:txt})});
+        if(!r.ok){ const e=await r.json(); console.error(e); return; }
+        await poll();
+    }catch(e){ console.error(e); }
+}
+
+async function delMsg(id){
+    if(!confirm('Delete this message?')) return;
+    const name=myName();
+    try{
+        await fetch('/forum/messages/'+id,{method:'DELETE',headers:{'Content-Type':'application/json'},body:JSON.stringify({author_name:name})});
+        const el=document.getElementById('msg-'+id);
+        if(el) el.remove();
+    }catch(e){}
+}
+</script>
+
+<%- include('../partials/footer.html') %>
